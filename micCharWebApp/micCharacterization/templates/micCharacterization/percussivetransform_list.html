@@ -1,0 +1,48 @@
+{% extends "micCharacterization/base.html" %}
+{% block content %}
+	<h1>
+		Percussive Transform List
+	</h1>
+    {% if percussive_graph.0 %}
+        <div class="row">
+            <div class="col-md-9">
+                <center>
+                    <img src="data:image/png;base64, {{percussive_graph.0|safe}}" alt="" id="img">
+                </center>
+            </div>
+        </div><br>
+    {% endif %}
+    {% if percussive_graph.1 %}
+        <div class="row">
+            <div class="col-md-9">
+                <center>
+                    <img src="data:image/png;base64, {{percussive_graph.1|safe}}" alt="" id="img">
+                </center>
+            </div>
+        </div><br>
+    {% endif %}
+{% endblock content %}
+{% block beneathsidebar %}
+    {% if percussive_graph.2 %}
+        {% for graph in percussive_graph %}
+            {% if forloop.counter0 == 0 or forloop.counter0 == 1 %}
+            {% else %}
+                {% if forloop.counter0|divisibleby:2 %}
+                <div class="row">
+                <div class="col-md-6">
+                    <center>
+                        <img src="data:image/png;base64, {{graph|safe}}" alt="" id="img">
+                    </center>
+                </div>
+                {% else %}
+                    <div class="col-md-6">
+                        <center>
+                            <img src="data:image/png;base64, {{graph|safe}}" alt="" id="img">
+                        </center>
+                    </div>
+                </div><br>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock beneathsidebar %}

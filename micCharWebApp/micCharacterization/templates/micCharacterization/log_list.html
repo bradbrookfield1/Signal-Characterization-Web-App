@@ -1,0 +1,41 @@
+{% extends "micCharacterization/base.html" %}
+{% block content %}
+	<div class="row">
+		<div class="col-md">
+			<h1>
+				Log List
+			</h1>
+			<div>
+				{% if object_list %}
+					{% if working %}
+						<a href="{% url 'log-confirm-delete-all' %}">
+							<button class="btn btn-outline-danger">
+								Delete All
+							</button>
+						</a>
+					{% endif %}
+				{% endif %}
+			</div>
+			<p>
+				{% for log in object_list %}
+					<article class="media content-section">
+						<div class="col-md-10">
+							{{ log.action }} the data record for {{ log.log_Name }}.<br>
+							<small class="text-muted">
+								{{ log.date|date:"F d, Y, h:i:s a" }}
+							</small><br>
+						</div>
+						<div class="col-md-4">
+							<a href="{% url 'log-confirm-delete' pk=log.pk %}">
+								<button class="btn btn-outline-danger">
+									Delete
+								</button>
+							</a>
+						</div>
+					</article>
+				{% endfor %}
+			</p>
+		</div>
+	</div>
+	<br><br>
+{% endblock content %}

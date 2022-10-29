@@ -1,0 +1,19 @@
+{% extends "micCharacterization/base.html" %}
+{% block content %}
+	<div class="row">
+		<div class="col-md">
+			<h1>
+				Microphone Data Record List
+			</h1>
+			<article class="media content-section">
+				<p>
+					{% for micDataRecord in object_list %}
+						<a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
+						 - {{ micDataRecord.signal_File }}<br>
+					{% endfor %}
+				</p>
+			</article>
+		</div>
+	</div>
+	<br><br>
+{% endblock content %}

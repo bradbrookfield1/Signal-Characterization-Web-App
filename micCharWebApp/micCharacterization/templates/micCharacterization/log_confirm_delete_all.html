@@ -1,0 +1,25 @@
+{% extends "micCharacterization/base.html" %}
+{% block content %}
+	<form method="POST">
+		{% csrf_token %}
+		<fieldset class="form-group">
+			<h1>
+				Delete All Logs
+			</h1>
+			<p>
+				Are you sure you want to delete all logs?
+			</p>
+		</fieldset>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-outline-danger">
+				Delete All
+			</button>
+			<a href="{% url 'log-list' %}">
+				<button type="button" class="btn btn-outline-secondary">
+					Cancel
+				</button>
+			</a>
+		</div>
+	</form>
+{% endblock content %}
