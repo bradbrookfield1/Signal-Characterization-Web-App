@@ -5,4 +5,4 @@ class MicDataRecordForm(forms.ModelForm):
 
     class Meta:
         model = MicDataRecord
-        fields = ['record_Name', 'description', 'signal_File', 'reference_File', 'signal_Start', 'signal_Duration', 'reference_Start', 'reference_Duration']
+        fields = ['record_Name', 'description', 'signal_File', 'reference_File', 'signal_Start', 'reference_Start', 'duration']

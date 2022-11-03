@@ -48,12 +48,11 @@ class Log(models.Model):
 class MicDataRecord(models.Model):
     record_Name = models.CharField(max_length=100)
     description = models.CharField(max_length=500, blank=True)
-    signal_File = models.FileField(upload_to='Uploads/', null=True)
-    signal_Start = models.IntegerField(blank=True, default=0)
-    signal_Duration = models.IntegerField(blank=True, null=True)
+    signal_File = models.FileField(upload_to='Uploads/')
+    signal_Start = models.IntegerField(blank=True, null=True)
     reference_File = models.FileField(blank=True)
     reference_Start = models.IntegerField(blank=True, null=True)
-    reference_Duration = models.IntegerField(blank=True, null=True)
+    duration = models.IntegerField(blank=True, null=True)
     
     class Meta:
         ordering = ('record_Name',)
@@ -74,7 +73,7 @@ class MicDataRecord(models.Model):
         return os.path.basename(self.reference_File.name)
     
     def get_start_dur(self):
-        return [self.signal_Start, self.signal_Duration, self.reference_Start, self.reference_Duration]
+        return [self.signal_Start, self.reference_Start, self.duration]
     
     def get_fileset():
         record_set = MicDataRecord.objects.all()

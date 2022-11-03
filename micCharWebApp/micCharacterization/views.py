@@ -22,7 +22,7 @@ class OriginalSignalListView(ListView):
         context = dict()
         file_set, start_dur_list = help_get_context()
         signal_graphs, psd_graphs, spectrograms = get_charts_detail('Time Signal', file_set, start_dur_list)
-        context['signal_graph'] = signal_graphs
+        context['graphs'] = signal_graphs
         return context
 
 class PowerSpectralDensityListView(ListView):
@@ -33,7 +33,7 @@ class PowerSpectralDensityListView(ListView):
         context = dict()
         file_set, start_dur_list = help_get_context()
         signal_graphs, psd_graphs, spectrograms = get_charts_detail('PSD', file_set, start_dur_list)
-        context['psd_graph'] = psd_graphs
+        context['graphs'] = psd_graphs
         return context
 
 class SpectrogramListView(ListView):
@@ -44,7 +44,7 @@ class SpectrogramListView(ListView):
         context = dict()
         file_set, start_dur_list = help_get_context()
         signal_graphs, psd_graphs, spectrograms = get_charts_detail('Spectrogram', file_set, start_dur_list)
-        context['spectrogram'] = spectrograms
+        context['graphs'] = spectrograms
         return context
 
 class PercussiveTransformListView(ListView):
@@ -109,7 +109,7 @@ class MicDataRecordDeleteView(DeleteView):
     model = MicDataRecord
     success_url = 'mic-data-record-list'
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         obj = self.get_object()
         log = Log(action="Deleted", log_Name=obj.record_Name, date=timezone.now())
         log.save()

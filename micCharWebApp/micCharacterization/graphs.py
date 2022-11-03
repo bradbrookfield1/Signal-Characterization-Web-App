@@ -7,8 +7,7 @@ from scipy import signal
 import librosa
 import librosa.display
 
-def load_files(classifier, wav_names, start_dur):
-    sig_ref_idx = 0 if classifier == 'Signal' else 2
+def load_files(wav_names, start_dur):
     wav_list = []
     lib_list = []
     if not wav_names:
@@ -23,7 +22,7 @@ def load_files(classifier, wav_names, start_dur):
                 wav_time_samplerate, wav_time_data = wavfile.read(wav_name)
             except IOError:
                 sys.exit('Error reading wav file!')
-            lib_time_data, lib_time_samplerate = librosa.load(wav_name, sr=None, offset=start_dur[idx][sig_ref_idx], duration=start_dur[idx][sig_ref_idx + 1])
+            lib_time_data, lib_time_samplerate = librosa.load(wav_name, sr=None, offset=start_dur[idx][0], duration=start_dur[idx][1])
             # lib_time_t = [range(start_dur[idx][sig_ref_idx], start_dur[idx][sig_ref_idx] + start_dur[idx][sig_ref_idx + 1] + 1, 1)]
             wav_list_temp = [wav_time_samplerate, wav_time_data]
             lib_list_temp = [lib_time_samplerate, lib_time_data]
@@ -31,21 +30,23 @@ def load_files(classifier, wav_names, start_dur):
             lib_list.append(lib_list_temp)
     return wav_list, lib_list
 
-def get_signal_charts(lib_list):
+def get_signal_charts(lib_list, dur_list):
     sig_chart_list = []
     if lib_list:
-        for lib_entry in lib_list:
+        for idx, lib_entry in enumerate(lib_list):
+            dur_list[idx][0] = dur_list[idx][0] if dur_list[idx][0] and not dur_list[idx][0] > len(lib_entry[1]) else 0
             plt.figure(1, figsize=(4, 3)).clf()
             # Takes longer, but works for all signals.
             # start = time.time()
-            librosa.display.waveshow(lib_entry[1], sr=lib_entry[0], max_points=sys.maxsize)
+            # librosa.display.waveshow(lib_entry[1], sr=lib_entry[0], max_points=sys.maxsize)
+            librosa.display.waveshow(lib_entry[1], sr=lib_entry[0], max_points=sys.maxsize, offset=dur_list[idx][0])
             # print(round(time.time() - start, 5))
             
             # Quicker, but doesn't work for all signals.
             # start = time.time()
-            # time_length = float(len(wav_entry[1])) / wav_entry[0]
-            # time_t = np.linspace(0., time_length, len(wav_entry[1]))
-            # plt.plot(time_t, wav_entry[1], lw=1)
+            # time_length = float(len(lib_entry[1])) / lib_entry[0]
+            # time_t = np.linspace(0., time_length, len(lib_entry[1]))
+            # plt.plot(time_t, lib_entry[1], lw=1)
             # print(round(time.time() - start, 5))
             
             plt.title('Time Domain Original Signal')
@@ -76,21 +77,36 @@ def get_PSD_charts(wav_list):
 
 def get_spectrograms(wav_list, lib_list, dur_list):
     spec_chart_list = []
-    if wav_list:
-        for idx, wav_entry in enumerate(wav_list):
+    if lib_list:
+        for idx, lib_entry in enumerate(lib_list):
+            dur_list[idx][0] = dur_list[idx][0] if dur_list[idx][0] else 0
+            dur_list[idx][1] = dur_list[idx][1] if dur_list[idx][1] else (len(lib_entry[1]) - dur_list[idx][0])/lib_entry[0]
             spec_fft_data = librosa.stft(lib_list[idx][1])
             spec_fft_db_data = librosa.amplitude_to_db(abs(spec_fft_data), ref=2e-5)
             
             plt.figure(1, figsize=(4, 3)).clf()
-            librosa.display.specshow(spec_fft_db_data, sr=lib_list[idx][0], x_axis='time', y_axis='log')
+            librosa.display.specshow(
+                spec_fft_db_data,
+                sr=lib_list[idx][0],
+                x_axis='time',
+                y_axis='log',
+                # tmin=dur_list[idx][0] if dur_list[idx][0] else None,
+                # tmax=dur_list[idx][0] + dur_list[idx][1] if dur_list[idx][1] else None
+            )
             plt.colorbar(format="%+2.f dB")
+            # plt.xlim([dur_list[idx][0], dur_list[idx][0] + dur_list[idx][1]])
             
-            time_length = float(dur_list[idx][1]) / wav_entry[0]
-            time_t = np.arange(dur_list[idx][0], dur_list[idx][0] + dur_list[idx][1] + 1, time_length)
+            # locs, labels = plt.xticks()
+            # for i in range(len(labels)):
+            #     labels[i] = labels[i] + dur_list[idx][0]
+            
+            # time_length = float(dur_list[idx][1]) / lib_entry[0]
+            # time_t = np.arange(dur_list[idx][0], dur_list[idx][0] + dur_list[idx][1] + 1, time_length)
             
             # time_length = float(len(wav_entry[1])) / wav_entry[0]
             # time_t = np.linspace(0., time_length, len(wav_entry[1]))
-            plt.plot([0, time_length*wav_entry[0]], [250, 250], 'g', lw=3)
+            # plt.plot([0, time_length*lib_entry[0]], [250, 250], 'g', lw=3)
+            plt.plot([0, float(len(lib_entry[1]))/lib_entry[0]], [250, 250], 'g', lw=3)
             plt.title('Spectrogram')
             plt.tight_layout()
             spec_chart_list.append(get_graph())
@@ -102,9 +118,6 @@ def normalize_signals(sig_wav_list, sig_lib_list, ref_wav_list=None, ref_lib_lis
     else:
         return ref_wav_list, ref_lib_list
 
-def get_wavfile_welch(wav_name):
-    buffer = BytesIO()
-
 def get_graph():
     buffer = BytesIO()
     plt.savefig(buffer, format='png')
@@ -115,24 +128,34 @@ def get_graph():
     buffer.close()
     return graph
 
-def get_charts_detail(chart_indicator, sig_wav_names, start_dur=None, ref_wav_names=None):
+def get_charts_detail(chart_indicator, sig_wav_names, start_dur, ref_wav_names=None):
     plt.switch_backend('AGG')
     sig_dur_list = []
     ref_dur_list = []
-    for i in enumerate(start_dur):
-        sig_dur_list.append([start_dur[i[0]][0], start_dur[i[0]][1]])
-        ref_dur_list.append([start_dur[i[0]][2], start_dur[i[0]][3]])
-    sig_wav_list, sig_lib_list = load_files('Signal', sig_wav_names, sig_dur_list)
-    ref_wav_list, ref_lib_list = load_files('Reference', ref_wav_names, ref_dur_list)
+    for i, std in enumerate(start_dur):
+        sig_dur_list.append([
+            # start_dur[i[0]][0] if not start_dur[i[0]][0] == None else None,
+            # start_dur[i[0]][1] if not start_dur[i[0]][1] == None else None
+            start_dur[i][0] if not start_dur[i][0] == None else None,
+            start_dur[i][2] if not start_dur[i][2] == None else None
+        ])
+        ref_dur_list.append([
+            # start_dur[i[0]][1] if not start_dur[i[0]][1] == None else None,
+            # start_dur[i[0]][2] if not start_dur[i[0]][2] == None else None
+            start_dur[i][1] if not start_dur[i][1] == None else None,
+            start_dur[i][2] if not start_dur[i][2] == None else None
+        ])
+    sig_wav_list, sig_lib_list = load_files(sig_wav_names, sig_dur_list)
+    ref_wav_list, ref_lib_list = load_files(ref_wav_names, ref_dur_list)
     norm_wav_list, norm_lib_list = normalize_signals(sig_wav_list, sig_lib_list, ref_wav_list, ref_lib_list)
     match chart_indicator:
         case 'All':
-            signal_graphs = get_signal_charts(norm_lib_list)
+            signal_graphs = get_signal_charts(norm_lib_list, sig_dur_list)
             # psd_graphs = get_PSD_charts(norm_wav_list)
             psd_graphs = None
             spectrograms = get_spectrograms(norm_wav_list, norm_lib_list, sig_dur_list)
         case 'Time Signal':
-            signal_graphs = get_signal_charts(norm_lib_list)
+            signal_graphs = get_signal_charts(norm_lib_list, sig_dur_list)
             psd_graphs = None
             spectrograms = None
         case 'PSD':
