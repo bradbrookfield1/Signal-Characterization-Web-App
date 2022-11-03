@@ -69,7 +69,7 @@ class MicDataRecordDetailView(DetailView):
         start_dur_list = self.get_object().get_start_dur()
         signal_graphs, psd_graphs, spectrograms = get_charts_detail('All', ['./Uploads/' + context['signal_File']], [start_dur_list])
         context['signal_graph'] = signal_graphs[0]
-        # context['psd_graph'] = psd_graphs[0]
+        context['psd_graph'] = psd_graphs[0]
         context['spectrogram'] = spectrograms[0]
         return context
 

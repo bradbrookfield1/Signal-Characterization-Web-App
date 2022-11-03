@@ -66,15 +66,19 @@
 	<div class="row">
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{signal_graph|safe}}" alt="" id="img">
+				<img src="data:image/png;base64, {{ signal_graph|safe }}" alt="" id="img">
 			</center>
 		</div>
-		
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ psd_graph|safe }}" alt="" id="img">
+			</center>
+		</div>
 	</div><br>
 	<div class="row">
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{spectrogram|safe}}" alt="" id="img">
+				<img src="data:image/png;base64, {{ spectrogram|safe }}" alt="" id="img">
 			</center>
 		</div>
 	</div><br><br>
