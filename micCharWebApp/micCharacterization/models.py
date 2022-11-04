@@ -60,9 +60,6 @@ class MicDataRecord(models.Model):
     def __str__(self):
         return self.record_Name
     
-    # def get_all_objects(self):
-    #     return MicDataRecord.objects.all()
-    
     def get_absolute_url(self):
         return reverse('mic-data-record-detail', kwargs={'pk': self.pk})
     

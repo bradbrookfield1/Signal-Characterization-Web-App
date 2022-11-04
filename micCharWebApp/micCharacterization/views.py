@@ -12,7 +12,17 @@ from django.conf import settings
 from django.utils import timezone
 from .forms import MicDataRecordForm
 from .models import MicDataRecord, Log
-from .graphs import get_charts_detail
+from .graphic_interfacing import charts_preprocess
+from .graphs import (
+    get_signal,
+    get_PSD,
+    get_spectrogram,
+    get_PS,
+    get_autocorrelation,
+    get_percussive,
+    get_harmonic,
+    get_harmonic_transform,
+)
 
 class OriginalSignalListView(ListView):
     model = MicDataRecord
@@ -21,8 +31,8 @@ class OriginalSignalListView(ListView):
     def get_context_data(model):
         context = dict()
         file_set, start_dur_list = help_get_context()
-        signal_graphs, psd_graphs, spectrograms = get_charts_detail('Time Signal', file_set, start_dur_list)
-        context['graphs'] = signal_graphs
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_signal(norm_lib_list, norm_start_dur)
         return context
 
 class PowerSpectralDensityListView(ListView):
@@ -32,8 +42,8 @@ class PowerSpectralDensityListView(ListView):
     def get_context_data(model):
         context = dict()
         file_set, start_dur_list = help_get_context()
-        signal_graphs, psd_graphs, spectrograms = get_charts_detail('PSD', file_set, start_dur_list)
-        context['graphs'] = psd_graphs
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_PSD(norm_lib_list)
         return context
 
 class SpectrogramListView(ListView):
@@ -43,17 +53,64 @@ class SpectrogramListView(ListView):
     def get_context_data(model):
         context = dict()
         file_set, start_dur_list = help_get_context()
-        signal_graphs, psd_graphs, spectrograms = get_charts_detail('Spectrogram', file_set, start_dur_list)
-        context['graphs'] = spectrograms
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_spectrogram(norm_lib_list)
         return context
 
-class PercussiveTransformListView(ListView):
+class PowerSpectrumListView(ListView):
     model = MicDataRecord
-    template_name = 'micCharacterization/percussivetransform_list.html'
+    template_name = 'micCharacterization/powerspectrum_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_PS(norm_lib_list)
+        return context
+    
+class AutocorrelationListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/autocorrelation_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_autocorrelation(norm_lib_list)
+        return context
+
+class PercussiveComponentsListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/percussivecomponents_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_percussive(norm_lib_list)
+        return context
+
+class HarmonicComponentsListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/harmoniccomponents_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_harmonic(norm_lib_list)
+        return context
 
 class HarmonicTransformListView(ListView):
     model = MicDataRecord
     template_name = 'micCharacterization/harmonictransform_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_harmonic_transform(norm_lib_list)
+        return context
 
 class MicDataRecordListView(ListView):
     model = MicDataRecord
@@ -67,10 +124,10 @@ class MicDataRecordDetailView(DetailView):
         context['signal_File'] = self.get_object().sig_filename()
         context['reference_File'] = self.get_object().ref_filename()
         start_dur_list = self.get_object().get_start_dur()
-        signal_graphs, psd_graphs, spectrograms = get_charts_detail('All', ['./Uploads/' + context['signal_File']], [start_dur_list])
-        context['signal_graph'] = signal_graphs[0]
-        context['psd_graph'] = psd_graphs[0]
-        context['spectrogram'] = spectrograms[0]
+        norm_lib_list, norm_start_dur = charts_preprocess(['./Uploads/' + context['signal_File']], [start_dur_list])
+        context['time_signal'] = get_signal(norm_lib_list, norm_start_dur)[0]
+        context['psd'] = get_PSD(norm_lib_list)[0]
+        context['spectrogram'] = get_spectrogram(norm_lib_list)[0]
         return context
 
 class MicDataRecordCreateView(CreateView):
