@@ -128,6 +128,8 @@ class MicDataRecordDetailView(DetailView):
         context['time_signal'] = get_signal(norm_lib_list, norm_start_dur)[0]
         context['psd'] = get_PSD(norm_lib_list)[0]
         context['spectrogram'] = get_spectrogram(norm_lib_list)[0]
+        context['percussive'] = get_percussive(norm_lib_list)[0]
+        context['harmonic'] = get_harmonic(norm_lib_list)[0]
         return context
 
 class MicDataRecordCreateView(CreateView):
