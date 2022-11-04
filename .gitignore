@@ -138,3 +138,4 @@ dmypy.json
 *.flac
 *.alac
 *.wma
+Uploads/*
