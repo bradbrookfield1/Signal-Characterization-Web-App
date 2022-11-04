@@ -53,6 +53,7 @@ class MicDataRecord(models.Model):
     reference_File = models.FileField(blank=True)
     reference_Start = models.IntegerField(blank=True, null=True)
     duration = models.IntegerField(blank=True, null=True)
+    hop_Length = models.IntegerField(blank=True, default=512)
     
     class Meta:
         ordering = ('record_Name',)

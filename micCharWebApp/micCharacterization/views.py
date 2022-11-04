@@ -16,9 +16,11 @@ from .graphic_interfacing import charts_preprocess
 from .graphs import (
     get_signal,
     get_PSD,
-    get_spectrogram,
     get_PS,
-    get_autocorrelation,
+    get_lag_autocorrelation,
+    get_bpm_autocorrelation,
+    get_onset_strength,
+    get_tempogram,
     get_percussive,
     get_harmonic,
     get_harmonic_transform,
@@ -46,7 +48,7 @@ class PowerSpectralDensityListView(ListView):
         context['graphs'] = get_PSD(norm_lib_list)
         return context
 
-class SpectrogramListView(ListView):
+class PowerSpectrumListView(ListView):
     model = MicDataRecord
     template_name = 'micCharacterization/spectrogram_list.html'
     
@@ -54,30 +56,30 @@ class SpectrogramListView(ListView):
         context = dict()
         file_set, start_dur_list = help_get_context()
         norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = get_spectrogram(norm_lib_list)
-        return context
-
-class PowerSpectrumListView(ListView):
-    model = MicDataRecord
-    template_name = 'micCharacterization/powerspectrum_list.html'
-    
-    def get_context_data(model):
-        context = dict()
-        file_set, start_dur_list = help_get_context()
-        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
         context['graphs'] = get_PS(norm_lib_list)
         return context
+
+# class LagAutocorrelationListView(ListView):
+#     model = MicDataRecord
+#     template_name = 'micCharacterization/lagautocorrelation_list.html'
     
-class AutocorrelationListView(ListView):
-    model = MicDataRecord
-    template_name = 'micCharacterization/autocorrelation_list.html'
+#     def get_context_data(model):
+#         context = dict()
+#         file_set, start_dur_list = help_get_context()
+#         norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+#         context['graphs'] = get_lag_autocorrelation(norm_lib_list)
+#         return context
     
-    def get_context_data(model):
-        context = dict()
-        file_set, start_dur_list = help_get_context()
-        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = get_autocorrelation(norm_lib_list)
-        return context
+# class BPMAutocorrelationListView(ListView):
+#     model = MicDataRecord
+#     template_name = 'micCharacterization/bpmautocorrelation_list.html'
+    
+#     def get_context_data(model):
+#         context = dict()
+#         file_set, start_dur_list = help_get_context()
+#         norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+#         context['graphs'] = get_bpm_autocorrelation(norm_lib_list)
+#         return context
 
 class PercussiveComponentsListView(ListView):
     model = MicDataRecord
@@ -120,14 +122,19 @@ class MicDataRecordDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super(MicDataRecordDetailView, self).get_context_data(**kwargs)
+        obj = self.get_object()
         context['MEDIA_URL'] = settings.MEDIA_URL
-        context['signal_File'] = self.get_object().sig_filename()
-        context['reference_File'] = self.get_object().ref_filename()
-        start_dur_list = self.get_object().get_start_dur()
+        context['signal_File'] = obj.sig_filename()
+        context['reference_File'] = obj.ref_filename()
+        start_dur_list = obj.get_start_dur()
         norm_lib_list, norm_start_dur = charts_preprocess(['./Uploads/' + context['signal_File']], [start_dur_list])
         context['time_signal'] = get_signal(norm_lib_list, norm_start_dur)[0]
+        context['ps'] = get_PS(norm_lib_list)[0]
+        context['lag_autocorrelation'] = get_lag_autocorrelation(norm_lib_list, obj.hop_Length)[0]
+        context['bpm_autocorrelation'] = get_bpm_autocorrelation(norm_lib_list, obj.hop_Length)[0]
+        context['onset_strength'] = get_onset_strength(norm_lib_list, obj.hop_Length)[0]
+        context['tempogram'] = get_tempogram(norm_lib_list, obj.hop_Length)[0]
         context['psd'] = get_PSD(norm_lib_list)[0]
-        context['spectrogram'] = get_spectrogram(norm_lib_list)[0]
         context['percussive'] = get_percussive(norm_lib_list)[0]
         context['harmonic'] = get_harmonic(norm_lib_list)[0]
         return context
