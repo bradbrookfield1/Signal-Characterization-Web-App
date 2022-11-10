@@ -29,6 +29,9 @@
 								</a>
 							</div>
 							<div class="navbar-nav">
+								<a class="nav-item nav-link" href="{% url 'concepts' %}">
+									Concepts
+								</a>
 								<a class="nav-item nav-link" href="{% url 'log-list' %}">
 									Logs
 								</a>
@@ -38,61 +41,92 @@
 				</div>
 			</nav>
 		</header>
-
-		<main role="main" class="container">
-			<div class="row">
-				<div class="col-md-8">
-					{% if messages %}
-						{% for message in messages %}
-							<div class="alert alert-{{ message.tags }}">
-								{{ message }}
-							</div>
-						{% endfor %}
-					{% endif %}
-					{% block content %}{% endblock content %}
-				</div>
-				<div class="col-md-4">
-					<div class="content-section">
-						<h3>Compare Characteristics</h3>
-						<p class="text-muted">
-							<ul class="list-group">
-								<li class="list-group-item list-group-item-light">
-									<a class="nav-item nav-link" href="{% url 'original-signal-list' %}">
-										Original Signals
-									</a>
-								</li>
-								<li class="list-group-item list-group-item-light">
-									<a class="nav-item nav-link" href="{% url 'power-spectrum-list' %}">
-										Power Spectrums
-									</a>
-								</li>
-								<li class="list-group-item list-group-item-light">
-									<a class="nav-item nav-link" href="{% url 'power-spectral-density-list' %}">
-										Power Spectral Densities
-									</a>
-								</li>
-								<li class="list-group-item list-group-item-light">
-									<a class="nav-item nav-link" href="{% url 'percussive-components-list' %}">
-										Percussive Components
-									</a>
-								</li>
-								<li class="list-group-item list-group-item-light">
-									<a class="nav-item nav-link" href="{% url 'harmonic-components-list' %}">
-										Harmonic Components
-									</a>
-								</li>
-								<li class="list-group-item list-group-item-light">
-									<a class="nav-item nav-link" href="{% url 'harmonic-transform-list' %}">
-										Harmonic Transforms
-									</a>
-								</li>
-							</ul>
-						</p>
+		{% block replacesidebar %}
+			<main role="main" class="container">
+				<div class="row">
+					<div class="col-md-8">
+						{% if messages %}
+							{% for message in messages %}
+								<div class="alert alert-{{ message.tags }}">
+									{{ message }}
+								</div>
+							{% endfor %}
+						{% endif %}
+						{% block content %}{% endblock content %}
+					</div>
+					<div class="col-md-4">
+						<div class="content-section">
+							<h3>Compare Characteristics</h3>
+							<p class="text-muted">
+								<ul class="list-group">
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'original-signal-list' %}">
+											Original Signals
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'onset-strength-list' %}">
+											Onset Strengths
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'autocorrelation-lag-list' %}">
+											Autocorrelations (Lag)
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'autocorrelation-bpm-list' %}">
+											Autocorrelations (BPM)
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'autocorrelation-tempogram-list' %}">
+											Autocorrelation Tempograms
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'fourier-tempogram-list' %}">
+											Fourier Tempograms
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'average-power-list' %}">
+											Average Powers
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'power-spectrum-list' %}">
+											Power Spectrums
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'mellin-spectrum-list' %}">
+											Mellin Power Spectrums
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'percussive-components-list' %}">
+											Percussive Components
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'harmonic-components-list' %}">
+											Harmonic Components
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'harmonic-transform-list' %}">
+											Harmonic Transforms
+										</a>
+									</li>
+								</ul>
+							</p>
+						</div>
 					</div>
 				</div>
-			</div>
-			{% block beneathsidebar %}{% endblock beneathsidebar %}
-		</main>
+				{% block beneathsidebar %}{% endblock beneathsidebar %}
+			</main>
+		{% endblock replacesidebar %}
 		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

@@ -1,34 +1,39 @@
 from django.urls import reverse
 from django.contrib import messages
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.db.models.deletion import Collector
+from django.db import router
 from django.views.generic import (
     ListView,
     DetailView,
     CreateView,
     UpdateView,
-    DeleteView
+    DeleteView,
+    TemplateView,
 )
 from django.conf import settings
 from django.utils import timezone
-from .forms import MicDataRecordForm
+from .forms import MicDataRecordForm, DeleteAllForm
 from .models import MicDataRecord, Log
 from .graphic_interfacing import charts_preprocess
 from .graphs import (
     get_signal,
-    get_PSD,
+    get_avg_power,
     get_PS,
     get_lag_autocorrelation,
     get_bpm_autocorrelation,
     get_onset_strength,
-    get_tempogram,
+    get_fourier_tempogram,
+    get_autocorr_tempogram,
     get_percussive,
     get_harmonic,
     get_harmonic_transform,
+    get_mellin
 )
 
 class OriginalSignalListView(ListView):
     model = MicDataRecord
-    template_name = 'micCharacterization/originalsignal_list.html'
+    template_name = 'micCharacterization/list_without_sidebar.html'
     
     def get_context_data(model):
         context = dict()
@@ -37,20 +42,75 @@ class OriginalSignalListView(ListView):
         context['graphs'] = get_signal(norm_lib_list, norm_start_dur)
         return context
 
-class PowerSpectralDensityListView(ListView):
+class OnsetStrengthListView(ListView):
     model = MicDataRecord
-    template_name = 'micCharacterization/powerspectraldensity_list.html'
+    template_name = 'micCharacterization/onsetstrength_list.html'
     
     def get_context_data(model):
         context = dict()
         file_set, start_dur_list = help_get_context()
         norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = get_PSD(norm_lib_list)
+        context['graphs'] = get_onset_strength(norm_lib_list)
+        return context
+    
+class AutocorrelationLagListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/list_with_sidebar.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_lag_autocorrelation(norm_lib_list)
+        return context
+    
+class AutocorrelationBPMListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/autocorrelationbpm_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_bpm_autocorrelation(norm_lib_list)
+        return context
+    
+class AutocorrTempogramListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/autocorrtempogram_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_autocorr_tempogram(norm_lib_list)
+        return context
+    
+class FourierTempogramListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/fouriertempogram_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_fourier_tempogram(norm_lib_list)
+        return context
+
+class AveragePowerListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/averagepower_list.html'
+    
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_avg_power(norm_lib_list)
         return context
 
 class PowerSpectrumListView(ListView):
     model = MicDataRecord
-    template_name = 'micCharacterization/spectrogram_list.html'
+    template_name = 'micCharacterization/powerspectrum_list.html'
     
     def get_context_data(model):
         context = dict()
@@ -59,27 +119,16 @@ class PowerSpectrumListView(ListView):
         context['graphs'] = get_PS(norm_lib_list)
         return context
 
-# class LagAutocorrelationListView(ListView):
-#     model = MicDataRecord
-#     template_name = 'micCharacterization/lagautocorrelation_list.html'
+class MellinListView(ListView):
+    model = MicDataRecord
+    template_name = 'micCharacterization/mellin_list.html'
     
-#     def get_context_data(model):
-#         context = dict()
-#         file_set, start_dur_list = help_get_context()
-#         norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
-#         context['graphs'] = get_lag_autocorrelation(norm_lib_list)
-#         return context
-    
-# class BPMAutocorrelationListView(ListView):
-#     model = MicDataRecord
-#     template_name = 'micCharacterization/bpmautocorrelation_list.html'
-    
-#     def get_context_data(model):
-#         context = dict()
-#         file_set, start_dur_list = help_get_context()
-#         norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
-#         context['graphs'] = get_bpm_autocorrelation(norm_lib_list)
-#         return context
+    def get_context_data(model):
+        context = dict()
+        file_set, start_dur_list = help_get_context()
+        norm_lib_list, norm_start_dur = charts_preprocess(file_set, start_dur_list)
+        context['graphs'] = get_mellin(norm_lib_list)
+        return context
 
 class PercussiveComponentsListView(ListView):
     model = MicDataRecord
@@ -114,6 +163,9 @@ class HarmonicTransformListView(ListView):
         context['graphs'] = get_harmonic_transform(norm_lib_list)
         return context
 
+class ImportantConceptsView(TemplateView):
+    template_name = 'micCharacterization/important_concepts.html'
+
 class MicDataRecordListView(ListView):
     model = MicDataRecord
 
@@ -130,13 +182,15 @@ class MicDataRecordDetailView(DetailView):
         norm_lib_list, norm_start_dur = charts_preprocess(['./Uploads/' + context['signal_File']], [start_dur_list])
         context['time_signal'] = get_signal(norm_lib_list, norm_start_dur)[0]
         context['ps'] = get_PS(norm_lib_list)[0]
-        context['lag_autocorrelation'] = get_lag_autocorrelation(norm_lib_list, obj.hop_Length)[0]
-        context['bpm_autocorrelation'] = get_bpm_autocorrelation(norm_lib_list, obj.hop_Length)[0]
-        context['onset_strength'] = get_onset_strength(norm_lib_list, obj.hop_Length)[0]
-        context['tempogram'] = get_tempogram(norm_lib_list, obj.hop_Length)[0]
-        context['psd'] = get_PSD(norm_lib_list)[0]
+        context['lag_autocorrelation'] = get_lag_autocorrelation(norm_lib_list)[0]
+        context['bpm_autocorrelation'] = get_bpm_autocorrelation(norm_lib_list)[0]
+        context['onset_strength'] = get_onset_strength(norm_lib_list)[0]
+        context['fourier_tempogram'] = get_fourier_tempogram(norm_lib_list)[0]
+        context['autocorrelation_tempogram'] = get_autocorr_tempogram(norm_lib_list)[0]
+        context['average_power'] = get_avg_power(norm_lib_list)[0]
         context['percussive'] = get_percussive(norm_lib_list)[0]
         context['harmonic'] = get_harmonic(norm_lib_list)[0]
+        context['mellin'] = get_mellin(norm_lib_list)[0]
         return context
 
 class MicDataRecordCreateView(CreateView):
@@ -205,18 +259,17 @@ def help_get_context():
         start_dur_list.append(records[idx].get_start_dur())
     return file_set, start_dur_list
 
-# class LogDeleteAllView(DeleteView):
-#     model = Log
-#     success_url = 'log-list'
-    
-#     def post(self, request):
-#         objs = MicDataRecord.get_all_objects(MicDataRecord)
-#         del objs
-#         return super().post(request)
-    
-#     # def post(self, request):
-#     #     MicDataRecord.objects.all().delete()
-#     #     return super().post(request)
-    
-#     def get_success_url(self):
-#         return reverse('log-list')
+def delete_all_logs(request):
+    if request.method == 'POST':
+        form = DeleteAllForm(request.POST)
+        if form.is_valid():
+            logs = Log.get_all_logs()
+            for log in logs:
+                using = router.db_for_write(log.__class__, instance=log)
+                collector = Collector(using=using, origin=log)
+                collector.collect([log], keep_parents=False)
+                collector.delete()
+            return redirect('log-list')
+    else:
+        form = DeleteAllForm()
+    return render(request, 'micCharacterization/log_confirm_delete_all.html')

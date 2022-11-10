@@ -1,0 +1,28 @@
+{% extends "micCharacterization/base.html" %}
+{% block replacesidebar %}
+    <main role="main" class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        <h1>
+            {% block chartListTitle %}
+                Original Time Signal List
+            {% endblock chartListTitle %}
+        </h1>
+        {% if graphs.0 %}
+            {% for graph in graphs %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <center>
+                            <img src="data:image/png;base64, {{ graph|safe }}" alt="" id="img">
+                        </center>
+                    </div>
+                </div><br>
+            {% endfor %}
+        {% endif %}
+    </main>
+{% endblock replacesidebar %}

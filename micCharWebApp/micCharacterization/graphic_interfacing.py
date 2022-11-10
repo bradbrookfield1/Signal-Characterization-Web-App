@@ -51,33 +51,3 @@ def charts_preprocess(sig_wav_names, start_dur, ref_wav_names=None):
     ref_lib_list, clean_ref_dur = load_files(ref_wav_names, ref_dur_list)
     norm_lib_list, norm_start_dur = normalize_signals(sig_lib_list, clean_sig_dur, ref_lib_list, clean_ref_dur)
     return norm_lib_list, norm_start_dur
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # match chart_indicator:
-    #     case 'All':
-    #         time_signal = get_signal(norm_lib_list, norm_start_dur)
-    #         ps = get_PS()
-    #         psd = get_PSD(norm_lib_list)
-    #         spectrogram = get_spectrogram(norm_lib_list)
-    #         autocorrelation = get_autocorrelation()
-    #         percussive = get_percussive()
-    #         harmonic = get_harmonic()
-    #         harmonic_transform = get_harmonic_transform()
-    #     case 'Time Signal':
-    #         time_signal = get_signal_charts(norm_lib_list, norm_start_dur)
-    #         ps, psd, spectrogram, autocorrelation, percussive, harmonic, harmonic_transform = None
-    #     case 'PSD':
-    #         psd = get_PSD_charts(norm_lib_list)
-    #         time_signal, ps, spectrogram, autocorrelation, percussive, harmonic, harmonic_transform = None
-    #     case 'Spectrogram':
-    #         spectrogram = get_spectrograms(norm_lib_list)
-    #         time_signal, ps, psd, autocorrelation, percussive, harmonic, harmonic_transform = None
-    # return time_signal, ps, psd, spectrogram, autocorrelation, percussive, harmonic, harmonic_transform

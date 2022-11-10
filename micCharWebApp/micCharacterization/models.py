@@ -44,6 +44,9 @@ class Log(models.Model):
 
     def get_absolute_url(self):
         return reverse('log-confirm-delete', kwargs={'pk': self.pk})
+    
+    def get_all_logs():
+        return Log.objects.all()
 
 class MicDataRecord(models.Model):
     record_Name = models.CharField(max_length=100)
@@ -53,7 +56,6 @@ class MicDataRecord(models.Model):
     reference_File = models.FileField(blank=True)
     reference_Start = models.IntegerField(blank=True, null=True)
     duration = models.IntegerField(blank=True, null=True)
-    hop_Length = models.IntegerField(blank=True, default=512)
     
     class Meta:
         ordering = ('record_Name',)

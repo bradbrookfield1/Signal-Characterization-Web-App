@@ -5,14 +5,26 @@
 			<h1>
 				Microphone Data Record List
 			</h1>
-			<article class="media content-section">
-				<p>
-					{% for micDataRecord in object_list %}
-						<a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
-						 - {{ micDataRecord.signal_File }}<br>
-					{% endfor %}
-				</p>
-			</article>
+				<article class="media content-section">
+					<table>
+						{% for micDataRecord in object_list %}
+							<tr>
+								<td class="d1">
+									<a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
+									- {{ micDataRecord.signal_File }}
+								</td>
+								<td class="d2">
+									&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+								</td>
+								<td class="d3">
+									<a href="{% url 'mic-data-record-confirm-delete' pk=micDataRecord.pk %}">
+										Delete
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</table>
+				</article>
 		</div>
 	</div>
 	<br><br>

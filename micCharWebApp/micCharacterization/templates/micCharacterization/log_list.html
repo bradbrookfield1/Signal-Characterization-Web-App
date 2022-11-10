@@ -2,19 +2,19 @@
 {% block content %}
 	<div class="row">
 		<div class="col-md">
-			<h1>
-				Log List
-			</h1>
-			<div>
-				{% if object_list %}
-					{% if working %}
-						<a href="{% url 'log-confirm-delete-all' %}">
-							<button class="btn btn-outline-danger">
-								Delete All
-							</button>
-						</a>
-					{% endif %}
-				{% endif %}
+			<div class="row">
+				<div class="col-md-10">
+					<h1>
+						Log List
+					</h1>
+				</div>
+				<div class="col-md-2">
+					<a href="{% url 'log-confirm-delete-all' %}">
+						<button class="btn btn-outline-danger">
+							Delete All
+						</button>
+					</a>
+				</div>
 			</div>
 			<p>
 				{% for log in object_list %}
