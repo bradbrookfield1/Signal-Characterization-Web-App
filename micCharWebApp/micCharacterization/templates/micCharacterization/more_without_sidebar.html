@@ -1,0 +1,10 @@
+{% extends "micCharacterization/list_without_sidebar.html" %}
+{% block chartListTitle %}
+	{% if type == 'Cepstrum' %}
+		Cepstrum List
+	{% elif type == 'Hilbert Phase' %}
+		Hilbert Phase List
+	{% elif type == 'Onset Strength' %}
+		Onset Strength List
+	{% endif %}
+{% endblock chartListTitle %}

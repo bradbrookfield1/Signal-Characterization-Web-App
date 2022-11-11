@@ -1,0 +1,24 @@
+{% extends "micCharacterization/list_with_sidebar.html" %}
+{% block chartListTitle %}
+	{% if type == 'Autocorrelation (BPM)' %}
+		Autocorrelation (BPM) List
+	{% elif type == 'Autocorrelation Tempogram' %}
+		Autocorrelation Tempogram List
+	{% elif type == 'Fourier Tempogram' %}
+		Fourier Tempogram List
+	{% elif type == 'Power Spectral Density' %}
+		Power Spectral Density List
+	{% elif type == 'Phase Spectrum' %}
+		Phase Spectrum List
+	{% elif type == 'Power Spectrum' %}
+		Power Spectrum List
+	{% elif type == 'Mellin Spectrum' %}
+		Mellin Scaled Power Spectrum List
+	{% elif type == 'Percussive Components' %}
+		Percussive Components List
+	{% elif type == 'Harmonic Components' %}
+		Harmonic Components List
+	{% elif type == 'Harmonic Prediction' %}
+		Harmonic Fundamental Frequency Prediction List
+	{% endif %}
+{% endblock chartListTitle %}

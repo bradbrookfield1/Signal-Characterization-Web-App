@@ -56,6 +56,7 @@ class MicDataRecord(models.Model):
     reference_File = models.FileField(blank=True)
     reference_Start = models.IntegerField(blank=True, null=True)
     duration = models.IntegerField(blank=True, null=True)
+    prediction_Harmonics = models.IntegerField(blank=True, null=True)
     
     class Meta:
         ordering = ('record_Name',)
@@ -65,6 +66,9 @@ class MicDataRecord(models.Model):
     
     def get_absolute_url(self):
         return reverse('mic-data-record-detail', kwargs={'pk': self.pk})
+    
+    def get_all_records():
+        return MicDataRecord.objects.all()
     
     def sig_filename(self):
         return os.path.basename(self.signal_File.name)
