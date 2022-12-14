@@ -10,9 +10,9 @@ class OriginalSignalListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_signal(norm_lib_list, norm_start_dur, norm_sig_list)
+        context['graphs'] = graphs_temporal.get_signal(norm_lib_list, norm_start_dur, norm_sig_list, name_list)
         return context
     
 class CepstrumListView(generic.ListView):
@@ -21,9 +21,9 @@ class CepstrumListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_cepstrum(norm_lib_list, norm_sig_list)
+        context['graphs'] = graphs_temporal.get_cepstrum(norm_lib_list, norm_sig_list, name_list)
         context['type'] = 'Cepstrum'
         return context
 
@@ -33,9 +33,9 @@ class HilbertPhaseListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_inst_phase(norm_lib_list, norm_sig_list)
+        context['graphs'] = graphs_temporal.get_inst_phase(norm_lib_list, norm_sig_list, name_list)
         context['type'] = 'Hilbert Phase'
         return context
 
@@ -45,9 +45,9 @@ class OnsetStrengthListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_onset_strength(norm_lib_list)
+        context['graphs'] = graphs_temporal.get_onset_strength(norm_lib_list, name_list)
         context['type'] = 'Onset Strength'
         return context
     
@@ -57,9 +57,9 @@ class AutocorrelationLagListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_lag_autocorrelation(norm_lib_list)
+        context['graphs'] = graphs_temporal.get_lag_autocorrelation(norm_lib_list, name_list)
         return context
     
 class AutocorrelationBPMListView(generic.ListView):
@@ -68,9 +68,9 @@ class AutocorrelationBPMListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_bpm_autocorrelation(norm_lib_list)
+        context['graphs'] = graphs_temporal.get_bpm_autocorrelation(norm_lib_list, name_list)
         context['type'] = 'Autocorrelation (BPM)'
         return context
     
@@ -80,9 +80,9 @@ class AutocorrTempogramListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_autocorr_tempogram(norm_lib_list)
+        context['graphs'] = graphs_temporal.get_autocorr_tempogram(norm_lib_list, name_list)
         context['type'] = 'Autocorrelation Tempogram'
         return context
     
@@ -92,8 +92,8 @@ class FourierTempogramListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_temporal.get_fourier_tempogram(norm_lib_list)
+        context['graphs'] = graphs_temporal.get_fourier_tempogram(norm_lib_list, name_list)
         context['type'] = 'Fourier Tempogram'
         return context

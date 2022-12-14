@@ -13,6 +13,7 @@ urlpatterns = [
     path('logs/<int:pk>/delete/', views.LogDeleteView.as_view(), name='log-confirm-delete'),
     path('logs/delete/all/', views.delete_all_logs, name='log-confirm-delete-all'),
     path('important-concepts', views.ImportantConceptsView.as_view(), name='concepts'),
+    path('test', views.TestView.as_view(), name='test-view'),
     
     path('original-signal-list/', views_temporal_graphs.OriginalSignalListView.as_view(), name='original-signal-list'),
     path('cepstrum-list/', views_temporal_graphs.CepstrumListView.as_view(), name='cepstrum-list'),

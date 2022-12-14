@@ -10,9 +10,9 @@ class PowerSpectralDensityListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_spectral.get_PSD(norm_lib_list)
+        context['graphs'] = graphs_spectral.get_PSD(norm_lib_list, name_list)
         context['type'] = 'Power Spectral Density'
         return context
 
@@ -22,9 +22,9 @@ class PhaseSpectrumListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_spectral.get_phase_spectrum(norm_sig_list)
+        context['graphs'] = graphs_spectral.get_phase_spectrum(norm_sig_list, name_list)
         context['type'] = 'Phase Spectrum'
         return context
 
@@ -38,9 +38,9 @@ class HarmonicPredictionListView(generic.ListView):
         for rec in records:
             pred_harm.append(rec.prediction_Harmonics)
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_spectral.get_harmonic_prediction(norm_lib_list, pred_harm)[0]
+        context['graphs'] = graphs_spectral.get_harmonic_prediction(norm_lib_list, pred_harm, name_list)[0]
         context['type'] = 'Harmonic Prediction'
         return context
 
@@ -50,9 +50,9 @@ class PowerSpectrumListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_spectral.get_PS(norm_lib_list)
+        context['graphs'] = graphs_spectral.get_PS(norm_lib_list, name_list)
         context['type'] = 'Power Spectrum'
         return context
 
@@ -62,9 +62,9 @@ class MellinListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_spectral.get_mellin(norm_lib_list)
+        context['graphs'] = graphs_spectral.get_mellin(norm_lib_list, name_list)
         context['type'] = 'Mellin Spectrum'
         return context
 
@@ -74,9 +74,9 @@ class PercussiveComponentsListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_spectral.get_percussive(norm_lib_list)
+        context['graphs'] = graphs_spectral.get_percussive(norm_lib_list, name_list)
         context['type'] = 'Percussive Components'
         return context
 
@@ -86,8 +86,8 @@ class HarmonicComponentsListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        file_set, start_dur_list = help_get_context()
+        file_set, start_dur_list, name_list = help_get_context()
         norm_lib_list, norm_start_dur, norm_sig_list = charts_preprocess(file_set, start_dur_list)
-        context['graphs'] = graphs_spectral.get_harmonic(norm_lib_list)
+        context['graphs'] = graphs_spectral.get_harmonic(norm_lib_list, name_list)
         context['type'] = 'Harmonic Components'
         return context

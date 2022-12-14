@@ -1,0 +1,27 @@
+{% extends "micCharacterization/base.html" %}
+{% block content %}
+    <h1>
+        Test
+    </h1>
+    <div class="row">
+        <ul>
+            {% for item in name_list %}
+                <li>{{ item }}</li><br>
+            {% endfor %}
+        </ul>
+    </div><br><br>
+    <div class="row">
+        <ul>
+            {% for item in file_set %}
+                <li>{{ item }}</li><br>
+            {% endfor %}
+        </ul>
+    </div><br><br>
+    <div class="row">
+        <ul>
+            {% for item in start_dur_list %}
+                <li>{{ item }}</li><br>
+            {% endfor %}
+        </ul>
+    </div><br><br>
+{% endblock content %}
