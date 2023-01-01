@@ -60,6 +60,11 @@
 					Delete
 				</button>
 			</a>
+			<a href="{% url 'mic-data-record-detail-refreshed' pk=micdatarecord.pk %}">
+				<button class="btn btn-outline-info">
+					Refresh
+				</button>
+			</a>
 		</div>
 	</div><br><br>
 {% endblock content %}
@@ -70,52 +75,52 @@
 	<div class="row">
 		<div class="col">
 			<center>
-				<img src="data:image/png;base64, {{ time_signal|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ signal_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>
 	<div class="row">
 		<div class="col-md">
 			<center>
-				<img src="data:image/png;base64, {{ cepstrum|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ cepstrum_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>
 	<div class="row">
 		<div class="col-md">
 			<center>
-				<img src="data:image/png;base64, {{ inst_phase|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ hilbert_Phase_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>
 	<div class="row">
 		<div class="col">
 			<center>
-				<img src="data:image/png;base64, {{ onset_strength|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ onset_Strength_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>
 	<div class="row">
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ lag_autocorrelation|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ lag_Autocorrelation_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ bpm_autocorrelation|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ BPM_Autocorrelation_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>
 	<div class="row">
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ autocorrelation_tempogram|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ autocorrelation_Tempogram|safe }}" class="img-fluid">
 			</center>
 		</div>
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ fourier_tempogram|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ fourier_Tempogram|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>
@@ -125,41 +130,41 @@
 	<div class="row">
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ psd|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ average_PSD_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ phase_spectrum|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ phase_Spectrum_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 		<!-- <div class="col-md-4">
 			<center>
-				<img src="data:image/png;base64, {{ harmonic_prediction|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ harmonic_Prediction_Graph|safe }}" class="img-fluid">
 			</center>
 		</div> -->
 	</div><br>
 	<div class="row">
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ ps|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ spectrogram|safe }}" class="img-fluid">
 			</center>
 		</div>
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ mellin|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ mellin_Spectrogram|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>
 	<div class="row">
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ percussive|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ percussive_Spectrogram|safe }}" class="img-fluid">
 			</center>
 		</div>
 		<div class="col-md-6">
 			<center>
-				<img src="data:image/png;base64, {{ harmonic|safe }}" alt="" id="img">
+				<img src="data:image/png;base64, {{ harmonic_Spectrogram|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br><br>

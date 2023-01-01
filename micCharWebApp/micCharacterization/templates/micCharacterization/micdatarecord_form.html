@@ -49,19 +49,11 @@
 			<button type="reset" class="btn btn-outline-info">
 				Reset
 			</button>
-			{% if isUpdate %}
-				<a href="{% url 'mic-data-record-detail' pk=micdatarecord.pk %}">
-					<button type="button" class="btn btn-outline-info">
-						Cancel
-					</button>
-				</a>
-			{% else %}
-				<a href="{% url 'mic-data-record-list' %}">
-					<button type="button" class="btn btn-outline-info">
-						Cancel
-					</button>
-				</a>
-			{% endif %}
+			<a href="{% url 'mic-data-record-list' %}">
+				<button type="button" class="btn btn-outline-info">
+					Cancel
+				</button>
+			</a>
 		</div>
 	</form>
 	<br><br>

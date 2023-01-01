@@ -8,19 +8,26 @@
                 </div>
             {% endfor %}
         {% endif %}
-        <h1>
-            {% block chartListTitle %}
-                Time Signal and Hilbert Envelope List
-            {% endblock chartListTitle %}
-        </h1>
+        <div class="row">
+            <h1>
+                {% block chartListTitle %}
+                    Time Signal and Hilbert Envelope List
+                {% endblock chartListTitle %}
+            </h1>
+        </div><br>
+        <div class="row">
+            <a href="{% url type %}">
+                <button type="button" class="btn btn-outline-info">
+                    Refresh
+                </button>
+            </a>
+        </div><br>
         {% if graphs.0 %}
             {% for graph in graphs %}
                 <div class="row">
-                    <div class="col-md-6">
-                        <center>
-                            <img src="data:image/png;base64, {{ graph|safe }}" alt="" id="img">
-                        </center>
-                    </div>
+                    <center>
+                        <img src="data:image/png;base64, {{ graph|safe }}" class="img-fluid">
+                    </center>
                 </div><br>
             {% endfor %}
         {% endif %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import MicDataRecord, Log
+from .models import MicDataRecord
 
 class DeleteAllForm(forms.Form):
     class Meta:

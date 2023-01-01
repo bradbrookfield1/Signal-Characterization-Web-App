@@ -1,8 +1,11 @@
-import base64
-from io import BytesIO
-import librosa
+import base64, os, librosa
 from matplotlib import pyplot as plt
 from acoustics import Signal
+
+def file_path_to_img(file_path):
+    img = open(file_path, 'rb').read()
+    img = base64.b64encode(img)
+    return img.decode('utf-8')
 
 def load_files(wav_names, start_dur):
     lib_list = []
@@ -28,15 +31,12 @@ def normalize_signals(sig_lib_list, sig_start_dur, sig_sig_list, ref_lib_list=No
     else:
         return ref_lib_list, ref_start_dur, ref_sig_list
 
-def get_graph():
-    buffer = BytesIO()
-    plt.savefig(buffer, format='png')
-    buffer.seek(0)
-    image_png = buffer.getvalue()
-    graph = base64.b64encode(image_png)
-    graph = graph.decode('utf-8')
-    buffer.close()
-    return graph
+def get_graph(temp_spec, attr, mic_Data_Record):
+    full_name = 'Uploads/' + temp_spec + '/' + attr + '/' + attr + '_' + str(mic_Data_Record.pk) + '.png'
+    if os.path.exists(full_name):
+        os.remove(full_name)
+    plt.savefig(full_name)
+    return full_name
 
 def charts_preprocess(sig_wav_names, start_dur, ref_wav_names=None):
     plt.switch_backend('AGG')
@@ -54,4 +54,5 @@ def charts_preprocess(sig_wav_names, start_dur, ref_wav_names=None):
     sig_lib_list, clean_sig_dur, sig_sig_list = load_files(sig_wav_names, sig_dur_list)
     ref_lib_list, clean_ref_dur, ref_sig_list = load_files(ref_wav_names, ref_dur_list)
     norm_lib_list, norm_start_dur, norm_sig_list = normalize_signals(sig_lib_list, clean_sig_dur, sig_sig_list, ref_lib_list, clean_ref_dur, ref_sig_list)
+    
     return norm_lib_list, norm_start_dur, norm_sig_list

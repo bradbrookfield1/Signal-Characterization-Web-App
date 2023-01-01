@@ -5,22 +5,8 @@
     </h1>
     <div class="row">
         <ul>
-            {% for item in name_list %}
-                <li>{{ item }}</li><br>
-            {% endfor %}
-        </ul>
-    </div><br><br>
-    <div class="row">
-        <ul>
-            {% for item in file_set %}
-                <li>{{ item }}</li><br>
-            {% endfor %}
-        </ul>
-    </div><br><br>
-    <div class="row">
-        <ul>
-            {% for item in start_dur_list %}
-                <li>{{ item }}</li><br>
+            {% for attr, graph in temp_DB_Graphs %}
+                <li>{{ attr }}: {{ graph }}</li><br>
             {% endfor %}
         </ul>
     </div><br><br>

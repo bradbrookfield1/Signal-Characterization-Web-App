@@ -1,24 +1,24 @@
 {% extends "micCharacterization/list_with_sidebar.html" %}
 {% block chartListTitle %}
-	{% if type == 'Autocorrelation (BPM)' %}
+	{% if type == 'autocorrelation-bpm-list' or type == 'autocorrelation-bpm-list-refreshed' %}
 		Autocorrelation (BPM) List
-	{% elif type == 'Autocorrelation Tempogram' %}
+	{% elif type == 'autocorrelation-tempogram-list' or type == 'autocorrelation-tempogram-list-refreshed' %}
 		Autocorrelation Tempogram List
-	{% elif type == 'Fourier Tempogram' %}
+	{% elif type == 'fourier-tempogram-list' or type == 'fourier-tempogram-list-refreshed' %}
 		Fourier Tempogram List
-	{% elif type == 'Power Spectral Density' %}
+	{% elif type == 'power-spectral-density-list' or type == 'power-spectral-density-list-refreshed' %}
 		Power Spectral Density List
-	{% elif type == 'Phase Spectrum' %}
+	{% elif type == 'phase-spectrum-list' or type == 'phase-spectrum-list-refreshed' %}
 		Phase Spectrum List
-	{% elif type == 'Power Spectrum' %}
+	{% elif type == 'power-spectrum-list' or type == 'power-spectrum-list-refreshed' %}
 		Power Spectrum List
-	{% elif type == 'Mellin Spectrum' %}
+	{% elif type == 'mellin-spectrum-list' or type == 'mellin-spectrum-list-refreshed' %}
 		Mellin Scaled Power Spectrum List
-	{% elif type == 'Percussive Components' %}
+	{% elif type == 'percussive-components-list' or type == 'percussive-components-list-refreshed' %}
 		Percussive Components List
-	{% elif type == 'Harmonic Components' %}
+	{% elif type == 'harmonic-components-list' or type == 'harmonic-components-list-refreshed' %}
 		Harmonic Components List
-	{% elif type == 'Harmonic Prediction' %}
+	{% elif type == 'harmonic-prediction-list' or type == 'harmonic-prediction-list-refreshed' %}
 		Harmonic Fundamental Frequency Prediction List
 	{% endif %}
 {% endblock chartListTitle %}

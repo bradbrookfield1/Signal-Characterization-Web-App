@@ -1,21 +1,30 @@
 {% extends "micCharacterization/base.html" %}
 {% block content %}
-	<h1>
-        {% block chartListTitle %}
-            Autocorrelation (Lag) List
-        {% endblock chartListTitle %}
-	</h1>
+    <div class="row">
+        <h1>
+            {% block chartListTitle %}
+                Autocorrelation (Lag) List
+            {% endblock chartListTitle %}
+        </h1>
+    </div><br>
+    <div class="row">
+        <a href="{% url type %}">
+            <button type="button" class="btn btn-outline-info">
+                Refresh
+            </button>
+        </a>
+    </div><br>
     {% if graphs.0 %}
         <div class="row">
             <div class="col-md-6">
                 <center>
-                    <img src="data:image/png;base64, {{ graphs.0|safe }}" alt="" id="img">
+                    <img src="data:image/png;base64, {{ graphs.0|safe }}" class="img-fluid">
                 </center>
             </div>
             {% if graphs.1 %}
             <div class="col-md-6">
                 <center>
-                    <img src="data:image/png;base64, {{ graphs.1|safe }}" alt="" id="img">
+                    <img src="data:image/png;base64, {{ graphs.1|safe }}" class="img-fluid">
                 </center>
             </div>
             {% endif %}
@@ -25,13 +34,13 @@
         <div class="row">
             <div class="col-md-6">
                 <center>
-                    <img src="data:image/png;base64, {{ graphs.2|safe }}" alt="" id="img">
+                    <img src="data:image/png;base64, {{ graphs.2|safe }}" class="img-fluid">
                 </center>
             </div>
             {% if graphs.3 %}
             <div class="col-md-6">
                 <center>
-                    <img src="data:image/png;base64, {{ graphs.3|safe }}" alt="" id="img">
+                    <img src="data:image/png;base64, {{ graphs.3|safe }}" class="img-fluid">
                 </center>
             </div>
             {% endif %}
@@ -41,13 +50,13 @@
         <div class="row">
             <div class="col-md-6">
                 <center>
-                    <img src="data:image/png;base64, {{ graphs.4|safe }}" alt="" id="img">
+                    <img src="data:image/png;base64, {{ graphs.4|safe }}" class="img-fluid">
                 </center>
             </div>
             {% if graphs.5 %}
             <div class="col-md-6">
                 <center>
-                    <img src="data:image/png;base64, {{ graphs.5|safe }}" alt="" id="img">
+                    <img src="data:image/png;base64, {{ graphs.5|safe }}" class="img-fluid">
                 </center>
             </div>
             {% endif %}
@@ -65,13 +74,13 @@
                 <div class="row">
                     <div class="col-md-4">
                         <center>
-                            <img src="data:image/png;base64, {{ graph|safe }}" alt="" id="img">
+                            <img src="data:image/png;base64, {{ graph|safe }}" class="img-fluid">
                         </center>
                     </div>
                 {% else %}
                     <div class="col-md-4">
                         <center>
-                            <img src="data:image/png;base64, {{ graph|safe }}" alt="" id="img">
+                            <img src="data:image/png;base64, {{ graph|safe }}" class="img-fluid">
                         </center>
                     </div>
                 {% endif %}

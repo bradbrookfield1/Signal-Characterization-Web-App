@@ -10,7 +10,7 @@
 						{% for micDataRecord in object_list %}
 							<tr>
 								<td class="d1">
-									<a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
+									{{ micDataRecord.pk }} - <a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
 									- {{ micDataRecord.signal_File }}
 								</td>
 								<td class="d2">
