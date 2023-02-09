@@ -138,3 +138,8 @@ dmypy.json
 *.flac
 *.alac
 *.wma
+
+# Image Files
+*.png
+*.jpeg
+*.jpg
