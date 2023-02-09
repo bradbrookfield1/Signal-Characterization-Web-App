@@ -156,7 +156,6 @@ class MicDataRecordCreateView(generic.CreateView):
 class MicDataRecordUpdateView(generic.UpdateView):
     model = MicDataRecord
     form_class = MicDataRecordForm
-    success_url = 'mic-data-record-list'
 
     def get_context_data(self, **kwargs):
         context = super(MicDataRecordUpdateView, self).get_context_data(**kwargs)
