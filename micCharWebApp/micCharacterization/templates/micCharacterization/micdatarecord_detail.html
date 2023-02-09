@@ -8,64 +8,67 @@
 			Record Name: {{ object.record_Name }}
 		</div>
 		<div class="col-md-6">
-			Signal File: {{ signal_File }}
+			Prediction Harmonics: {{ object.prediction_Harmonics }}
 		</div>
 	</div><br><br>
 	<div class="row">
 		<div class="col-md-6">
 			Record Description: {{ object.description }}
 		</div>
-		<div class="col-md-6">
-			Reference File: {{ reference_File }}
-		</div>
 	</div><br><br>
 	<div class="row">
-		<div class="col-md-6">
-			Signal Start: {{ object.signal_Start }}<br>
-			Duration: {{ object.duration }}
-		</div>
-		<div class="col-md-6">
-			Reference Start: {{ object.reference_Start }}<br>
-			Prediction Harmonics: {{ object.prediction_Harmonics }}
-		</div>
-	</div><br><br>
-	<div class="row">
-		<div class="col-md-6">
+		<div class="col">
+			True Signal: {{ true_Signal_File }}<br>
 			<audio id="Player" controls>
-				<source src="/Uploads/{{ signal_File }}" type="audio/wav">
-			</audio>
+				<source src="/Uploads/Recordings/true_Signal_File/{{ true_Signal_File }}" type="audio/wav">
+			</audio><br><br>
+			Measured Signal: {{ measured_Signal_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/measured_Signal_File/{{ measured_Signal_File }}" type="audio/wav">
+			</audio><br>
+			Measured Signal Reference: {{ reference_Signal_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/reference_Signal_File/{{ reference_Signal_File }}" type="audio/wav">
+			</audio><br><br>
+			Noisy Signal: {{ noisy_Signal_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/noisy_Signal_File/{{ noisy_Signal_File }}" type="audio/wav">
+			</audio><br>
+			Noisy Signal Reference: {{ reference_Noisy_Signal_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/reference_Noisy_Signal_File/{{ reference_Noisy_Signal_File }}" type="audio/wav">
+			</audio><br><br>
+			Measured Noise: {{ noise_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/noise_File/{{ noise_File }}" type="audio/wav">
+			</audio><br>
+			Measured Noise Reference: {{ reference_Noise_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/reference_Noise_File/{{ reference_Noise_File }}" type="audio/wav">
+			</audio><br><br>
 		</div>
-		{% if object.reference_File %}
-			<div class="col-md-6">
-				<audio controls>
-					<source src="/Uploads/{{ reference_File }}" type="audio/wav">
-				</audio>
-			</div>
-		{% endif %}
-	</div><br><br>
+	</div>
 	<div class="row">
-		<div class="col-md-6">
-			<a href="{% url 'mic-data-record-update' pk=micdatarecord.pk %}">
-				<button class="btn btn-primary">
-					Update
-				</button>
-			</a>
-			<a href="{% url 'mic-data-record-list' %}">
-				<button class="btn btn-outline-info">
-					Home
-				</button>
-			</a>
-			<a href="{% url 'mic-data-record-confirm-delete' pk=micdatarecord.pk %}">
-				<button class="btn btn-outline-info">
-					Delete
-				</button>
-			</a>
-			<a href="{% url 'mic-data-record-detail-refreshed' pk=micdatarecord.pk %}">
-				<button class="btn btn-outline-info">
-					Refresh
-				</button>
-			</a>
-		</div>
+		<a href="{% url 'mic-data-record-update' pk=micdatarecord.pk %}">
+			<button class="btn btn-primary">
+				Update
+			</button>
+		</a>&nbsp;
+		<a href="{% url 'mic-data-record-list' %}">
+			<button class="btn btn-outline-info">
+				Home
+			</button>
+		</a>&nbsp;
+		<a href="{% url 'mic-data-record-confirm-delete' pk=micdatarecord.pk %}">
+			<button class="btn btn-outline-info">
+				Delete
+			</button>
+		</a>&nbsp;
+		<a href="{% url 'mic-data-record-detail-refreshed' pk=micdatarecord.pk %}">
+			<button class="btn btn-outline-info">
+				Refresh
+			</button>
+		</a>
 	</div><br><br>
 {% endblock content %}
 {% block beneathsidebar %}
@@ -138,12 +141,43 @@
 				<img src="data:image/png;base64, {{ phase_Spectrum_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
-		<!-- <div class="col-md-4">
-			<center>
-				<img src="data:image/png;base64, {{ harmonic_Prediction_Graph|safe }}" class="img-fluid">
-			</center>
-		</div> -->
 	</div><br>
+	{% if pure_Signal_SNR_Graph or system_Signal_SNR_Graph %}
+		<div class="row">
+			<div class="col-md-6">
+				{% if pure_Signal_SNR_Graph %}
+					<center>
+						<img src="data:image/png;base64, {{ pure_Signal_SNR_Graph|safe }}" class="img-fluid">
+					</center>
+				{% endif %}
+			</div>
+			<div class="col-md-6">
+				{% if system_Signal_SNR_Graph %}
+					<center>
+						<img src="data:image/png;base64, {{ system_Signal_SNR_Graph|safe }}" class="img-fluid">
+					</center>
+				{% endif %}
+			</div>
+		</div><br>
+	{% endif %}
+	{% if given_Signal_SNR_Graph or given_Noise_SNR_Graph %}
+		<div class="row">
+			<div class="col-md-6">
+				{% if given_Signal_SNR_Graph %}
+					<center>
+						<img src="data:image/png;base64, {{ given_Signal_SNR_Graph|safe }}" class="img-fluid">
+					</center>
+				{% endif %}
+			</div>
+			<div class="col-md-6">
+				{% if given_Noise_SNR_Graph %}
+					<center>
+						<img src="data:image/png;base64, {{ given_Noise_SNR_Graph|safe }}" class="img-fluid">
+					</center>
+				{% endif %}
+			</div>
+		</div><br>
+	{% endif %}
 	<div class="row">
 		<div class="col-md-6">
 			<center>

@@ -5,15 +5,16 @@
 		<fieldset class="form-group">
 			<h1>
 				Microphone Data Record Detail Form
-			</h1>
+			</h1><br>
+			Please convert all multi-track files to mono before uploading!<br><br>
 			<div class="row">
 				<div class="col-md-6">
 					Record Name:<br>
 					{{ form.record_Name }}
 				</div>
 				<div class="col-md-6">
-					Signal File:<br>
-					{{ form.signal_File }}
+					Prediction Harmonics:<br>
+					{{ form.prediction_Harmonics }}
 				</div>
 			</div><br>
 			<div class="row">
@@ -21,23 +22,19 @@
 					Record Description:<br>
 					{{ form.description }}
 				</div>
-				<div class="col-md-6">
-					Reference File:<br>
-					{{ form.reference_File }}
-				</div>
 			</div><br>
 			<div class="row">
-				<div class="col-md-6">
-					Signal Start:<br>
-					{{ form.signal_Start }}<br>
-					Duration:<br>
-					{{ form.duration }}
-				</div>
-				<div class="col-md-6">
-					Reference Start:<br>
-					{{ form.reference_Start }}<br>
-					Prediction Harmonics:<br>
-					{{ form.prediction_Harmonics }}
+				<div class="col">
+					True Signal: {{ form.true_Signal_File }}<br><br>
+
+					Measured Signal: {{ form.measured_Signal_File }}<br>
+					Measured Signal Reference: {{ form.reference_Signal_File }}<br><br>
+
+					Noisy Signal: {{ form.noisy_Signal_File }}<br>
+					Noisy Signal Reference: {{ form.reference_Noisy_Signal_File }}<br><br>
+
+					Measured Noise: {{ form.noise_File }}<br>
+					Measured Noise Reference: {{ form.reference_Noise_File }}<br>
 				</div>
 			</div><br>
 		</fieldset>

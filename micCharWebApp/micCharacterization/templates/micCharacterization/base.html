@@ -29,6 +29,9 @@
 								</a>
 							</div>
 							<div class="navbar-nav">
+								<a class="nav-item nav-link" href="{% url 'acoustic-prop' %}">
+									Propagation
+								</a>
 								<a class="nav-item nav-link" href="{% url 'concepts' %}">
 									Concepts
 								</a>
@@ -101,17 +104,42 @@
 									</li>
 									<li class="list-group-item list-group-item-light">
 										<a class="nav-item nav-link" href="{% url 'power-spectral-density-list' %}">
-											Average Power Spectral Densities
+											Power Spectral Densities
 										</a>
 									</li>
 									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'power-spectrum-list' %}">
-											Power Spectrums
+										<a class="nav-item nav-link" href="{% url 'phase-spectrum-list' %}">
+											Phase Spectrums
 										</a>
 									</li>
 									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'mellin-spectrum-list' %}">
-											Mellin Power Spectrums
+										<a class="nav-item nav-link" href="{% url 'pure-SNR-list' %}">
+											SNR Given Both
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'system-SNR-list' %}">
+											SNR System Approach
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'signal-SNR-list' %}">
+											SNR Given Signal
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'noise-SNR-list' %}">
+											SNR Given Noise
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'spectrogram-list' %}">
+											Spectrograms
+										</a>
+									</li>
+									<li class="list-group-item list-group-item-light">
+										<a class="nav-item nav-link" href="{% url 'mellin-spectrogram-list' %}">
+											Mellin Spectrograms
 										</a>
 									</li>
 									<li class="list-group-item list-group-item-light">

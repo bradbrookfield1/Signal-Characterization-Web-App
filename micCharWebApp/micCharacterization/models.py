@@ -1,10 +1,10 @@
-import os
+import os, copy
 from django.db import models
 from django.urls import reverse
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 
-def delete_file_if_unused(model,instance,field,instance_file_field):
+def delete_file_if_unused(model, instance, field, instance_file_field):
     dynamic_field = {}
     dynamic_field[field.name] = instance_file_field.name
     other_refs_exist = model.objects.filter(**dynamic_field).exclude(pk=instance.pk).exists()
@@ -49,13 +49,15 @@ class Log(models.Model):
 
 class MicDataRecord(models.Model):
     record_Name = models.CharField(max_length=100)
-    description = models.CharField(max_length=500, blank=True)
-    signal_File = models.FileField(upload_to='Recordings/')
-    signal_Start = models.IntegerField(blank=True, null=True)
-    reference_File = models.FileField(blank=True)
-    reference_Start = models.IntegerField(blank=True, null=True)
-    duration = models.IntegerField(blank=True, null=True)
+    description = models.CharField(max_length=1000, blank=True)
     prediction_Harmonics = models.IntegerField(blank=True, null=True)
+    noisy_Signal_File = models.FileField(upload_to='Recordings/noisy_Signal_File/', blank=True, null=True)
+    measured_Signal_File = models.FileField(upload_to='Recordings/measured_Signal_File/', blank=True, null=True)
+    noise_File = models.FileField(upload_to='Recordings/noise_File/', blank=True, null=True)
+    true_Signal_File = models.FileField(upload_to='Recordings/true_Signal_File/', blank=True, null=True)
+    reference_Noisy_Signal_File = models.FileField(upload_to='Recordings/reference_Noisy_Signal_File/', blank=True, null=True)
+    reference_Signal_File = models.FileField(upload_to='Recordings/reference_Signal_File/', blank=True, null=True)
+    reference_Noise_File = models.FileField(upload_to='Recordings/reference_Noise_File/', blank=True, null=True)
     
     class Meta:
         ordering = ('pk',)
@@ -69,21 +71,24 @@ class MicDataRecord(models.Model):
     def get_all_records():
         return MicDataRecord.objects.all()
     
-    def sig_filename(self):
-        return os.path.basename(self.signal_File.name)
-    
-    def ref_filename(self):
-        return os.path.basename(self.reference_File.name)
-    
-    def get_start_dur(self):
-        return [self.signal_Start, self.reference_Start, self.duration]
+    def filename(self, attr):
+        return eval('os.path.basename(self.' + attr + '.name)')
     
     def get_fileset():
         record_set = MicDataRecord.objects.all().order_by('pk')
         file_set = []
         for record in record_set:
-            file_name = str(record.sig_filename())
-            file_set.append(file_name)
+            file_name_list = []
+            record_DB_dict = record.__dict__
+            record_DB_dict_fixed = copy.deepcopy(record_DB_dict)
+            del record_DB_dict_fixed['record_Name'], record_DB_dict_fixed['description'], record_DB_dict_fixed['prediction_Harmonics']
+            del record_DB_dict_fixed['_state'], record_DB_dict_fixed['id']
+            for attr, value in record_DB_dict_fixed.items():
+                if record.filename(attr):
+                    file_name_list.append('./Uploads/Recordings/' + attr + '/' + str(record.filename(attr)))
+                else:
+                    file_name_list.append(None)
+            file_set.append(file_name_list)
         return file_set
 
 class TemporalDatabase(models.Model):
@@ -107,6 +112,10 @@ class SpectralDatabase(models.Model):
     mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
     average_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
     phase_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
+    pure_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
+    system_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
+    given_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
+    given_Noise_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
     spectrogram = models.CharField(max_length=1000, default=None, null=True)
     mellin_Spectrogram = models.CharField(max_length=1000, default=None, null=True)
     percussive_Spectrogram = models.CharField(max_length=1000, default=None, null=True)

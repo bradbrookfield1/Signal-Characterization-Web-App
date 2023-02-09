@@ -9,13 +9,13 @@ from acoustics.cepstrum import complex_cepstrum
 fig_size = (6, 4.5)
 fig_size_xl = (12, 3)
 
-def get_signal(lib_list, dur_list, sig_list, name, mic_Data_Record):
+def get_signal(lib_list, sig, name, mic_Data_Record):
     plt.figure(2, figsize=fig_size_xl).clf()
-    librosa.display.waveshow(sig_list[0:int(lib_list[0]/10)], sr=lib_list[0], max_points=sys.maxsize, offset=dur_list[0], label='Signal', lw=0.5, alpha=0.75)
-    sig = sig_list.amplitude_envelope()[0:int(lib_list[0]/10):1]
+    librosa.display.waveshow(sig[0:int(lib_list[0]/10)], sr=lib_list[0], max_points=sys.maxsize, label='Signal', lw=0.5, alpha=0.75)
+    ampl_env = sig.amplitude_envelope()[0:int(lib_list[0]/10):1]
     t = np.arange(0, 1/10, 1/lib_list[0])
-    plt.plot(t, sig, 'r', label='Envelope', linestyle='dashed', lw=0.25, alpha=0.25)
-    plt.plot(t, -sig, 'r', linestyle='dashed', lw=0.25, alpha=0.25)
+    plt.plot(t, ampl_env, 'r', label='Envelope', linestyle='dashed', lw=0.25, alpha=0.25)
+    plt.plot(t, -ampl_env, 'r', linestyle='dashed', lw=0.25, alpha=0.25)
     plt.title(name + ' Time Signal & Hilbert Envelope (1st tenth of a second)')
     plt.xlabel('Time (s)')
     plt.ylabel('Amplitude (V)')
@@ -24,23 +24,23 @@ def get_signal(lib_list, dur_list, sig_list, name, mic_Data_Record):
     plt.tight_layout()
     return get_graph('Temporal Graphs', 'signal_Graph', mic_Data_Record)
 
-def get_cepstrum(lib_list, sig_list, name, mic_Data_Record):
+def get_cepstrum(lib_list, sig, name, mic_Data_Record):
     plt.figure(2, figsize=fig_size_xl).clf()
     t = np.arange(0, 1/10, 1/lib_list[0])
-    sig, _ = complex_cepstrum(sig_list)
-    sig = sig[0:int(lib_list[0]/10)]
-    plt.plot(t, sig, lw=0.75, alpha=0.75)
+    ceps, _ = complex_cepstrum(sig)
+    ceps = ceps[0:int(lib_list[0]/10)]
+    plt.plot(t, ceps, lw=0.75, alpha=0.75)
     plt.title(name + ' Cepstrum (1st tenth of a second)')
     plt.xlabel('Time (s)')
     plt.grid(True)
     plt.tight_layout()
     return get_graph('Temporal Graphs', 'cepstrum_Graph', mic_Data_Record)
 
-def get_inst_phase(lib_list, sig_list, name, mic_Data_Record):
+def get_inst_phase(lib_list, sig, name, mic_Data_Record):
     plt.figure(2, figsize=fig_size_xl).clf()
     t = np.arange(0, 1/10, 1/lib_list[0])
-    sig = sig_list.instantaneous_phase()[0:int(lib_list[0]/10)]
-    plt.plot(t, sig, lw=1, alpha=0.5)
+    inst_phase = sig.instantaneous_phase()[0:int(lib_list[0]/10)]
+    plt.plot(t, inst_phase, lw=1, alpha=0.5)
     plt.title(name + ' Hilbert Phase (1st tenth of a second)')
     plt.xlabel('Time (s)')
     plt.ylabel('Phase (rad)')
@@ -65,10 +65,11 @@ def get_lag_autocorrelation(lib_list, name, mic_Data_Record):
     tempogram = librosa.feature.tempogram(onset_envelope=onset_strength, sr=lib_list[0])
     ac_global = librosa.autocorrelate(onset_strength, max_size=tempogram.shape[0])
     ac_global = librosa.util.normalize(ac_global)
-    lag_seconds = np.linspace(0, len(lib_list[1]) / lib_list[0], num=tempogram.shape[0])
+    lag_seconds_local = np.linspace(0, len(lib_list[1])/lib_list[0], num=tempogram.shape[0])
+    lag_seconds_global = np.linspace(0, len(lib_list[1])/lib_list[0], num=len(ac_global))
     plt.figure(1, figsize=fig_size).clf()
-    plt.plot(lag_seconds, np.mean(tempogram, axis=1), label='Mean Local Autocorrelation', alpha=0.75)
-    plt.plot(lag_seconds, ac_global, '--', alpha=0.5, label='Global Autocorrelation')
+    plt.plot(lag_seconds_local, np.mean(tempogram, axis=1), label='Mean Local Autocorrelation', alpha=0.75)
+    plt.plot(lag_seconds_global, ac_global, '--', alpha=0.5, label='Global Autocorrelation')
     plt.title(name + '\nAutocorrelation')
     plt.legend(loc='lower left')
     plt.xlabel('Lag (s)')
@@ -82,11 +83,12 @@ def get_bpm_autocorrelation(lib_list, name, mic_Data_Record):
     tempogram = librosa.feature.tempogram(onset_envelope=onset_strength, sr=lib_list[0])
     ac_global = librosa.autocorrelate(onset_strength, max_size=tempogram.shape[0])
     ac_global = librosa.util.normalize(ac_global)
-    freqs = librosa.tempo_frequencies(tempogram.shape[0], sr=lib_list[0])
+    freqs_local = librosa.tempo_frequencies(tempogram.shape[0], sr=lib_list[0])
+    freqs_global = librosa.tempo_frequencies(len(ac_global), sr=lib_list[0])
     tempo = librosa.beat.tempo(onset_envelope=onset_strength, sr=lib_list[0])[0]
     plt.figure(1, figsize=fig_size).clf()
-    plt.semilogx(freqs[1:], np.mean(tempogram[1:], axis=1), label='Mean Local Autocorrelation', base=2, alpha=0.75)
-    plt.semilogx(freqs[1:], ac_global[1:], '--', alpha=0.5, label='Global Autocorrelation', base=2)
+    plt.semilogx(freqs_local[1:], np.mean(tempogram[1:], axis=1), label='Mean Local Autocorrelation', base=2, alpha=0.75)
+    plt.semilogx(freqs_global[1:], ac_global[1:], '--', alpha=0.5, label='Global Autocorrelation', base=2)
     plt.axvline(tempo, color='black', linestyle='--', alpha=0.75, label='Estimated Tempo = {:g}'.format(tempo))
     plt.title(name + '\nAutocorrelation')
     plt.legend(frameon=True)

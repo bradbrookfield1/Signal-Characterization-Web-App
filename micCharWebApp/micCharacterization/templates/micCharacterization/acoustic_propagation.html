@@ -1,0 +1,42 @@
+{% extends "micCharacterization/base.html" %}
+{% block content %}
+    <h1>
+        Atmospheric Spectral Propagation Model
+    </h1>
+    <div class="row">
+        <ul>
+            <li>Formulas...</li><br>
+            <li>More formulas...</li><br>
+            <li>Even more formulas...</li>
+        </ul>
+    </div><br><br>
+{% endblock content %}
+{% block beneathsidebar %}
+    <h1>
+        Spectral Attenuation Plots
+    </h1>
+    <div class="row">
+        <div class="col-md-6">
+            <center>
+                <img src="data:image/png;base64, {{ graphs.0|safe }}" class="img-fluid">
+            </center>
+        </div>
+        <div class="col-md-6">
+            <center>
+                <img src="data:image/png;base64, {{ graphs.1|safe }}" class="img-fluid">
+            </center>
+        </div>
+    </div><br>
+    <div class="row">
+        <div class="col-md-6">
+            <center>
+                <img src="data:image/png;base64, {{ graphs.2|safe }}" class="img-fluid">
+            </center>
+        </div>
+        <div class="col-md-6">
+            <center>
+                <img src="data:image/png;base64, {{ graphs.3|safe }}" class="img-fluid">
+            </center>
+        </div>
+    </div><br><br><br><br><br><br><br><br><br>
+{% endblock beneathsidebar %}

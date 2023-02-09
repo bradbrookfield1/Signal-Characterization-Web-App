@@ -1,6 +1,7 @@
 import math
 from matplotlib import pyplot as plt
 from scipy import signal
+from functools import partial
 import numpy as np
 import librosa
 import librosa.display
@@ -10,20 +11,20 @@ from .calculations import fft_vectorized
 fig_size = (6, 4.5)
 
 def get_PSD(lib_list, name, mic_Data_Record):
-    avg_freq, avg_data = signal.welch(x=lib_list[1], fs=lib_list[0])
+    avg_freq, avg_data = signal.welch(x=lib_list[1], fs=lib_list[0], average='mean')
     plt.figure(1, figsize=fig_size).clf()
-    plt.loglog(avg_freq, avg_data, label='', lw=1, alpha=0.75)
-    plt.title(name + '\nAverage Power Spectral Density')
+    plt.semilogy(avg_freq, avg_data, label='', lw=1, alpha=0.75)
+    plt.title(name + '\nPower Spectral Density Estimate')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Power Spectral Density (V^2/Hz)')
     plt.grid(True)
     plt.tight_layout()
     return get_graph('Spectral Graphs', 'average_PSD_Graph', mic_Data_Record)
 
-def get_phase_spectrum(sig_list, name, mic_Data_Record):
+def get_phase_spectrum(sig, name, mic_Data_Record):
     plt.figure(1, figsize=fig_size).clf()
-    freq, sig = sig_list.phase_spectrum()
-    plt.semilogx(freq, sig, alpha=0.75)
+    freq, sig = sig.phase_spectrum()
+    plt.plot(freq, sig, alpha=0.75)
     plt.title(name + '\nPhase Spectrum')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Phase (rad)')
@@ -31,7 +32,7 @@ def get_phase_spectrum(sig_list, name, mic_Data_Record):
     plt.tight_layout()
     return get_graph('Spectral Graphs', 'phase_Spectrum_Graph', mic_Data_Record)
 
-def get_PS(lib_list, name, mic_Data_Record):
+def get_spectrogram(lib_list, name, mic_Data_Record):
     ps_fft_data = librosa.stft(lib_list[1])
     ps_fft_db_data = librosa.amplitude_to_db(abs(ps_fft_data), ref=np.max)
     plt.figure(1, figsize=fig_size).clf()
@@ -43,7 +44,7 @@ def get_PS(lib_list, name, mic_Data_Record):
         y_axis='log',
     )
     plt.colorbar(format='%+2.f dB')
-    plt.title(name + '\nPower Spectrum')
+    plt.title(name + '\nSpectrogram')
     plt.xlabel('Time (s)')
     plt.ylabel('Frequency (Hz)')
     plt.tight_layout()
@@ -61,7 +62,7 @@ def get_mellin(lib_list, name, mic_Data_Record):
         y_axis='log',
     )
     plt.colorbar(format='%+2.f dB')
-    plt.title(name + '\nMellin Scaled Power Spectrum')
+    plt.title(name + '\nMellin Scaled Spectrogram')
     plt.xlabel('Time (s)')
     plt.ylabel('Frequency (Hz)')
     plt.tight_layout()
