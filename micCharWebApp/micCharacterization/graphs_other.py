@@ -127,3 +127,23 @@ def get_spec_prop_abs_coeff_dist(freqs, dist_array, temperature, relative_humidi
     plt.legend()
     plt.tight_layout()
     return get_abs_coeff_graph()
+
+def get_spec_prop_abs_coeff_p(freqs, distance, temperature, relative_humidity, p_bar_array, p_ref):
+    p_bar_abs_coeff = []
+    plt.figure(1, figsize=fig_size).clf()
+    if isinstance(p_ref, np.ndarray):
+        plt.title('Spectral Sound Absorption Coefficient\nVarying Barometric & Reference Pressure Together')
+        for p_bar, p_r in zip(p_bar_array, p_ref):
+            p_bar_abs_coeff.append(calc_coeff(freqs, distance, temperature, relative_humidity, p_bar, p_r))
+    else:
+        plt.title('Spectral Sound Absorption Coefficient\nVarying Barometric Pressure')
+        for p_bar in p_bar_array:
+            p_bar_abs_coeff.append(calc_coeff(freqs, distance, temperature, relative_humidity, p_bar, p_ref))
+    plt.xlabel(r'Frequency/Pressure $\left(\frac{Hz}{atm}\right)$')
+    plt.ylabel(r'Absorption Coefficient $\left(\frac{dB}{\_\_\_\_ m \cdot atm}\right)$')
+    plt.grid(True)
+    for i in range(len(p_bar_abs_coeff)):
+        plt.loglog(freqs, p_bar_abs_coeff[i], label=str(p_bar_array[i]) + ' Pa', lw=0.75, alpha=0.75)
+    plt.legend()
+    plt.tight_layout()
+    return get_abs_coeff_graph()

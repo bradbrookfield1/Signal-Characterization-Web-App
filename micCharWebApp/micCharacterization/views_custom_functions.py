@@ -27,6 +27,7 @@ def spec_prop_abs_coeff_graphs():
     temp_array = [((i*5 - 20) + 273.15) for i in range(9)]  # Kelvin (-20, -15, -10, ..., 20 deg C)
     dist_array_lin = np.linspace(1, 100, 10)                # Meters
     dist_array_log = np.logspace(0, 2, 10)
+    p_bar_array = np.linspace(101325, 151325, 11)
     
     temperature = temperature + 273.15                      # To Kelvin
     freqs = freqs/(p_bar/101325)                            # Normalized by barometric pressure
@@ -34,7 +35,9 @@ def spec_prop_abs_coeff_graphs():
     return [graphs_other.get_spec_prop_abs_coeff_hum(freqs, distance, temperature, rel_hum_array, p_bar, p_ref),
             graphs_other.get_spec_prop_abs_coeff_temp(freqs, distance, temp_array, relative_humidity, p_bar, p_ref),
             graphs_other.get_spec_prop_abs_coeff_dist(freqs, dist_array_lin, temperature, relative_humidity, p_bar, p_ref),
-            graphs_other.get_spec_prop_abs_coeff_dist(freqs, dist_array_log, temperature, relative_humidity, p_bar, p_ref)]
+            graphs_other.get_spec_prop_abs_coeff_dist(freqs, dist_array_log, temperature, relative_humidity, p_bar, p_ref),
+            graphs_other.get_spec_prop_abs_coeff_p(freqs, distance, temperature, relative_humidity, p_bar_array, p_ref),
+            graphs_other.get_spec_prop_abs_coeff_p(freqs, distance, temperature, relative_humidity, p_bar_array, p_bar_array)]
 
 def list_intro():
     file_set_list, name_list, records = help_get_context()
