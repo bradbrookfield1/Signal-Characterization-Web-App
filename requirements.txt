@@ -36,7 +36,7 @@ opencv-python==4.6.0.66
 packaging==21.3
 pandas==1.5.1
 Pillow==9.3.0
-pip==22.3.1
+pip==23.0
 pooch==1.6.0
 pycparser==2.21
 pyerfa==2.0.0.1
