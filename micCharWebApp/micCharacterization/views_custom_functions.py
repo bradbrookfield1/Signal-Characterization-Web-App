@@ -121,27 +121,27 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
         case 'fourier_Tempogram':
             context['fourier_Tempogram'] = graphs_temporal.get_fourier_tempogram(plot_me[0], name, mic_Data_Record)
         case 'average_PSD_Graph':
-            context['average_PSD_Graph'] = graphs_spectral.get_PSD(plot_me[0], name, mic_Data_Record)
+            context['average_PSD_Graph'] = graphs_spectral.get_PSD(plot_me[2], name, mic_Data_Record)
         case 'phase_Spectrum_Graph':
             context['phase_Spectrum_Graph'] = graphs_spectral.get_phase_spectrum(plot_me[1], name, mic_Data_Record)
         case 'pure_Signal_SNR_Graph':
             if norm_sig and norm_noise:
-                context['pure_Signal_SNR_Graph'] = graphs_other.get_pure_SNR(norm_sig[0], norm_noise[0], name, mic_Data_Record)
+                context['pure_Signal_SNR_Graph'] = graphs_other.get_pure_SNR(norm_sig[2], norm_noise[2], name, mic_Data_Record)
             else:
                 context['pure_Signal_SNR_Graph'] = None
         case 'system_Signal_SNR_Graph':
             if norm_noisy_sig and true_sig:
-                context['system_Signal_SNR_Graph'] = graphs_other.get_SNR_system(norm_noisy_sig[0], true_sig[0], name, mic_Data_Record)
+                context['system_Signal_SNR_Graph'] = graphs_other.get_SNR_system(norm_noisy_sig[2], true_sig[2], name, mic_Data_Record)
             else:
                 context['system_Signal_SNR_Graph'] = None
         case 'given_Signal_SNR_Graph':
             if norm_noisy_sig and norm_sig:
-                context['given_Signal_SNR_Graph'] = graphs_other.get_SNR_gvn_sig(norm_noisy_sig[0], norm_sig[0], name, mic_Data_Record)
+                context['given_Signal_SNR_Graph'] = graphs_other.get_SNR_gvn_sig(norm_noisy_sig[2], norm_sig[2], name, mic_Data_Record)
             else:
                 context['given_Signal_SNR_Graph'] = None
         case 'given_Noise_SNR_Graph':
             if norm_noisy_sig and norm_noise:
-                context['given_Noise_SNR_Graph'] = graphs_other.get_SNR_gvn_noise(norm_noisy_sig[0], norm_noise[0], name, mic_Data_Record)
+                context['given_Noise_SNR_Graph'] = graphs_other.get_SNR_gvn_noise(norm_noisy_sig[2], norm_noise[2], name, mic_Data_Record)
             else:
                 context['given_Noise_SNR_Graph'] = None
         case 'spectrogram':
