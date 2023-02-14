@@ -218,9 +218,6 @@ def delete_all_logs(request):
         form = DeleteAllForm()
     return render(request, 'micCharacterization/log_confirm_delete_all.html')
 
-class ImportantConceptsView(generic.TemplateView):
-    template_name = 'micCharacterization/important_concepts.html'
-
 class AcousticPropagationView(generic.TemplateView):
     template_name = 'micCharacterization/acoustic_propagation.html'
     
