@@ -6,7 +6,6 @@ from django.db.models.deletion import Collector
 from django.db import router
 from django.views import generic
 from django.utils import timezone
-# from django.forms import ValidationError
 from .forms import MicDataRecordForm, DeleteAllForm
 from .models import MicDataRecord, Log, TemporalDatabase, SpectralDatabase
 from .views_custom_functions import detail_intro, find_graph, delete_intro, help_get_context, spec_prop_abs_coeff_graphs
@@ -217,6 +216,9 @@ def delete_all_logs(request):
     else:
         form = DeleteAllForm()
     return render(request, 'micCharacterization/log_confirm_delete_all.html')
+
+class ImportantConceptsView(generic.TemplateView):
+    template_name = 'micCharacterization/important_concepts.html'
 
 class AcousticPropagationView(generic.TemplateView):
     template_name = 'micCharacterization/acoustic_propagation.html'

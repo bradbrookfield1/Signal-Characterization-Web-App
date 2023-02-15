@@ -145,4 +145,4 @@ dmypy.json
 *.jpg
 
 UploadsReset
-important_concepts.html
+*important_concepts.html

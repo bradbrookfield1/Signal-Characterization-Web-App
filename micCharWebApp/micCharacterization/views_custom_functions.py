@@ -1,6 +1,5 @@
 from .models import MicDataRecord, TemporalDatabase, SpectralDatabase
 from .graphic_interfacing import charts_preprocess
-from .calculations import calc_coeff
 from . import graphs_temporal, graphs_spectral, graphs_other
 from matplotlib import pyplot as plt
 import numpy as np
@@ -16,23 +15,26 @@ def help_get_context():
 
 def spec_prop_abs_coeff_graphs():
     plt.switch_backend('AGG')
-    freqs = np.logspace(1, 4, 100)                          # Hz
-    p_bar = 101425                                          # Pascals
-    p_ref = 101325                                          # Pascals
-    relative_humidity = 0.5                                 # Decimal
-    temperature = 20                                        # Celcius
-    distance = 1                                            # Meters
+    speed_noise_spl_dict = {'13': 80, '15': 84, '18': 87.5, '20': 90}   # m/s: dB SPL
+    freqs = np.logspace(1, 4, 100)                                      # Hz
+    p_bar = 101425                                                      # Pascals
+    p_ref = 101325                                                      # Pascals
+    relative_humidity = 0.5                                             # Decimal
+    temperature = 20                                                    # Celcius
+    distance = 10                                                       # Meters
     
-    rel_hum_array = [i/10 for i in range(11)]               # Decimal (0, 0.1, 0.2, ..., 1)
-    temp_array = [((i*5 - 20) + 273.15) for i in range(9)]  # Kelvin (-20, -15, -10, ..., 20 deg C)
-    dist_array_lin = np.linspace(1, 100, 10)                # Meters
+    rel_hum_array = [i/10 for i in range(11)]                   # Decimal (0, 0.1, 0.2, ..., 1)
+    temp_array = [((i*5 - 20) + 273.15) for i in range(9)]      # Kelvin (-20, -15, -10, ..., 20 deg C)
+    dist_array_lin = np.linspace(1, 100, 10)                    # Meters
     dist_array_log = np.logspace(0, 2, 10)
     p_bar_array = np.linspace(101325, 151325, 11)
     
-    temperature = temperature + 273.15                      # To Kelvin
-    freqs = freqs/(p_bar/101325)                            # Normalized by barometric pressure
+    temperature = temperature + 273.15                          # To Kelvin
+    # freqs = freqs/(p_bar/101325)                                # Normalized by barometric pressure
     
-    return [graphs_other.get_spec_prop_abs_coeff_hum(freqs, distance, temperature, rel_hum_array, p_bar, p_ref),
+    return [graphs_other.get_snr_pred_dist(freqs, distance, temperature, relative_humidity, p_bar, p_ref),
+            graphs_other.get_snr_pred_dist(freqs, dist_array_lin, temperature, relative_humidity, p_bar, p_ref),
+            graphs_other.get_spec_prop_abs_coeff_hum(freqs, distance, temperature, rel_hum_array, p_bar, p_ref),
             graphs_other.get_spec_prop_abs_coeff_temp(freqs, distance, temp_array, relative_humidity, p_bar, p_ref),
             graphs_other.get_spec_prop_abs_coeff_dist(freqs, dist_array_lin, temperature, relative_humidity, p_bar, p_ref),
             graphs_other.get_spec_prop_abs_coeff_dist(freqs, dist_array_log, temperature, relative_humidity, p_bar, p_ref),
