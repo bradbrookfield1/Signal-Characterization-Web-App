@@ -1,10 +1,7 @@
 import math
 from matplotlib import pyplot as plt
 from scipy import signal
-from functools import partial
 import numpy as np
-import librosa
-import librosa.display
 from .graphic_interfacing import get_graph, get_abs_coeff_graph
 from .calculations import calc_coeff, calc_snr_pred
 

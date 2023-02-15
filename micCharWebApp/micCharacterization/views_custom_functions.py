@@ -1,5 +1,5 @@
 from .models import MicDataRecord, TemporalDatabase, SpectralDatabase
-from .graphic_interfacing import charts_preprocess
+from .preprocessing import charts_preprocess
 from . import graphs_temporal, graphs_spectral, graphs_other
 from matplotlib import pyplot as plt
 import numpy as np
