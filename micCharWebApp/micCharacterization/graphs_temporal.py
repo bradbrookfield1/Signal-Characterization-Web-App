@@ -14,8 +14,8 @@ def get_signal(lib_list, sig, name, mic_Data_Record):
     librosa.display.waveshow(sig[0:int(lib_list[0]/10)], sr=lib_list[0], max_points=sys.maxsize, label='Signal', lw=0.5, alpha=0.75)
     ampl_env = sig.amplitude_envelope()[0:int(lib_list[0]/10):1]
     t = np.arange(0, 1/10, 1/lib_list[0])
-    plt.plot(t, ampl_env, 'r', label='Envelope', linestyle='dashed', lw=0.25, alpha=0.25)
-    plt.plot(t, -ampl_env, 'r', linestyle='dashed', lw=0.25, alpha=0.25)
+    plt.plot(t, ampl_env, 'r', label='Envelope', linestyle='dashed', lw=0.25, alpha=0.75)
+    plt.plot(t, -ampl_env, 'r', linestyle='dashed', lw=0.25, alpha=0.75)
     plt.title(name + ' Time Signal & Hilbert Envelope (1st tenth of a second)')
     plt.xlabel('Time (s)')
     plt.ylabel('Amplitude (V)')

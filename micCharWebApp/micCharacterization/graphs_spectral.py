@@ -1,7 +1,8 @@
 import math
 from matplotlib import pyplot as plt
-from scipy import signal
+from scipy import signal, interpolate
 import numpy as np
+import pandas as pd
 import librosa
 import librosa.display
 from .graphic_interfacing import get_graph
@@ -11,12 +12,15 @@ fig_size = (6, 4.5)
 
 def get_PSD(lib_list, name, mic_Data_Record):
     avg_freq, avg_data = signal.welch(x=lib_list[1], fs=lib_list[0], average='mean')
+    avg_data_pd = pd.Series(avg_data).rolling(13, center=True).mean().to_numpy()
     plt.figure(1, figsize=fig_size).clf()
-    plt.semilogy(avg_freq, avg_data, label='', lw=1, alpha=0.75)
+    plt.semilogy(avg_freq, avg_data, label='Raw PSD', lw=1, alpha=0.75)
+    plt.semilogy(avg_freq, avg_data_pd, label='Rolled', lw=1, alpha=0.75)
     plt.title(name + '\nPower Spectral Density Estimate')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Power Spectral Density (V^2/Hz)')
     plt.grid(True)
+    plt.legend()
     plt.tight_layout()
     return get_graph('Spectral Graphs', 'average_PSD_Graph', mic_Data_Record)
 

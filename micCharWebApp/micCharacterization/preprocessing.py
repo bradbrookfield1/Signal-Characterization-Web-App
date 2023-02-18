@@ -1,4 +1,5 @@
 import librosa
+import numpy as np
 from acoustics import Signal
 from matplotlib import pyplot as plt
 
@@ -9,6 +10,11 @@ def load_file(wav_name):
         sig = Signal.from_wav(wav_name)
         lib_time_data, lib_time_samplerate = librosa.load(wav_name, sr=96000)
         lib_snr_data, lib_snr_samplerate = librosa.load(wav_name, sr=2000)
+        
+        lib_time_data = np.float64(librosa.mu_compress(lib_time_data))
+        
+        # lib_snr_data = np.float64(librosa.mu_compress(lib_snr_data))
+
         lib_list = [lib_time_samplerate, lib_time_data]
         lib_snr_list = [lib_snr_samplerate, lib_snr_data]
         return lib_list, sig, lib_snr_list
