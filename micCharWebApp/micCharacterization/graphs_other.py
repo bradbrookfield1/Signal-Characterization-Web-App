@@ -57,11 +57,9 @@ def get_SNR_gvn_sig(noisy_sig_list, sig_list, name, mic_Data_Record):
     db_rolled_before = []
     for noisy_sig, sig, noisy_sig_r, sig_r in zip(noisy_sig_data, sig_data, noisy_sig_roll, sig_roll):
         # this_data_ratio = 1/((noisy_sig/sig) - 1)
-        # this_data_ratio = 1/(((noisy_sig + (10**-5))/sig) - 1)
         this_data_ratio = 1/(((noisy_sig*1.25)/sig) - 1)
         
         # this_roll_ratio = 1/((noisy_sig_r/sig_r) - 1)
-        # this_roll_ratio = 1/(((noisy_sig_r + (10**-5))/sig_r) - 1)
         this_roll_ratio = 1/(((noisy_sig_r*1.25)/sig_r) - 1)
         
         snr_plain.append(this_data_ratio)
@@ -98,11 +96,9 @@ def get_SNR_gvn_noise(noisy_sig_list, noise_list, name, mic_Data_Record):
     db_rolled_before = []
     for noisy_sig, noise, noisy_sig_r, noise_r in zip(noisy_sig_data, noise_data, noisy_sig_roll, noise_roll):
         # this_data_ratio = (noisy_sig/noise) - 1
-        # this_data_ratio = ((noisy_sig + (10**-5))/noise) - 1
         this_data_ratio = ((noisy_sig*1.25)/noise) - 1
         
         # this_roll_ratio = (noisy_sig_r/noise_r) - 1
-        # this_roll_ratio = ((noisy_sig_r + (10**-5))/noise_r) - 1
         this_roll_ratio = ((noisy_sig_r*1.25)/noise_r) - 1
         
         snr_plain.append(this_data_ratio)
