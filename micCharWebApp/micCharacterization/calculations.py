@@ -1,4 +1,8 @@
 import numpy as np
+import pandas as pd
+from scipy import signal
+from .constants import freqs, window, spl_speed, spl_src, vel_array, dir_fact
+from .constants import tunnel_dist, temperature, relative_humidity, p_bar, p_ref
 
 def calc_coeff(freqs, distance, temperature, rel_hum, p_bar, p_ref):
     p_sat_ref = p_sat_ref_easy(temperature)
@@ -16,7 +20,7 @@ def calc_coeff(freqs, distance, temperature, rel_hum, p_bar, p_ref):
 def calc_snr_pred(freqs, noise_spl, src_spl, dir_fact, distance, vel_array, temperature, rel_hum, p_bar, p_ref):
     # vel_array = [src_wind_vel, uav_vel, uav_wind_vel]
     abs_coeff_db, sound_speed_const, air_dens = calc_coeff(freqs, 1, temperature, rel_hum, p_bar, p_ref)
-    # sos_wind = sound_speed_const + vel_array[0]
+    # sos_wind = sound_speed_const + vel_array[0] (src_wind_vel)
     src_p_acc = value_db_conv(src_spl, 'value', 'pressure', 'value')
     src_intensity = p_acc_intensity_conv(src_p_acc, 'pressure', sound_speed_const, air_dens)
     src_pwr = pwr_intensity_conv(src_intensity, 'intensity', 1, dir_fact)
@@ -35,7 +39,7 @@ def calc_snr_pred(freqs, noise_spl, src_spl, dir_fact, distance, vel_array, temp
     noise_pwr_db = value_db_conv(noise_pwr, 'value', 'power', 'db')
     
     return src_pwr_db_dist - noise_pwr_db
-    
+
 def value_db_conv(val, val_rat, val_type, result_type, ref=10**-12):
     # val_rat options: value, ratio
     # val_type options: intensity, power, pressure, voltage, current
@@ -52,6 +56,29 @@ def value_db_conv(val, val_rat, val_type, result_type, ref=10**-12):
         return factor*np.log10(val/ref)
     else: # result_type == 'db' and val_rat == 'ratio'
         return factor*np.log10(val)
+
+def db_array_to_mean(db_array):
+    avg_ratio = np.mean(value_db_conv(db_array, 'ratio', 'power', 'value'))
+    return value_db_conv(avg_ratio, 'ratio', 'power', 'db')
+
+def find_avg_snr_db_dist_array(dist_array, snr_db=None, special_dist=tunnel_dist):
+    if not type(dist_array) == np.ndarray:
+        dist_array = [dist_array]
+    snr_pred_db = calc_snr_pred(freqs, spl_speed, spl_src, dir_fact, special_dist, vel_array, temperature, relative_humidity, p_bar, p_ref)
+    if snr_db and special_dist:
+        diff = db_array_to_mean(snr_pred_db) - snr_db
+    else:
+        diff = 0
+    
+    snr_avg_db_dist_model = []
+    snr_avg_db_dist = []
+    for dist in dist_array:
+        snr_avg_db_model = db_array_to_mean(calc_snr_pred(freqs, spl_speed, spl_src, dir_fact, dist, vel_array, temperature, relative_humidity, p_bar, p_ref))
+        snr_avg_db_dist_model.append(snr_avg_db_model)
+        snr_avg_db_dist.append(snr_avg_db_model - diff)
+    if diff == 0:
+        snr_avg_db_dist = None
+    return dist_array, snr_avg_db_dist, snr_avg_db_dist_model
 
 def p_acc_intensity_conv(val, in_type, sound_speed, air_dens):
     if in_type == 'pressure':
@@ -122,3 +149,42 @@ def fft_vectorized(sig, r_harmonic):
         terms = np.exp(-1j * np.pi * np.arange(sum_term.shape[0]) / sum_term.shape[0])[:, None]
         sum_term = np.vstack([even + terms * odd, even - terms * odd])
     return sum_term.ravel()
+
+def get_SNR_arrays(list_1, list_2, snr_type):
+    # snr_type: Pure, Given Signal, Given Noise, System
+    # list_1: sig, sig, noisy_sig, sig
+    # list_2: noise, noisy_sig, noise, noisy_sig
+    
+    list_1_freq, list_1_data = signal.welch(x=list_1[1], fs=list_1[0])
+    list_2_freq, list_2_data = signal.welch(x=list_2[1], fs=list_2[0])
+    
+    list_1_roll = pd.Series(list_1_data).rolling(window, center=True).mean().to_numpy()
+    list_2_roll = pd.Series(list_2_data).rolling(window, center=True).mean().to_numpy()
+    
+    if snr_type == 'System':
+        list_2_data = list_2_data - list_1_data
+        list_2_roll = pd.Series(list_2_roll - list_1_roll).rolling(window, center=True).mean().to_numpy()
+    
+    snr_plain = []
+    db_plain = []
+    snr_rolled_before = []
+    db_rolled_before = []
+    for l1, l2, l1r, l2r in zip(list_1_data, list_2_data, list_1_roll, list_2_roll):
+        if snr_type == 'Given Signal':
+            this_data_ratio = 1/(((l2*1.25)/l1) - 1)
+            this_roll_ratio = 1/(((l2r*1.25)/l1r) - 1)
+        elif snr_type == 'Given Noise':
+            this_data_ratio = ((l1*1.25)/l2) - 1
+            this_roll_ratio = ((l1r*1.25)/l2r) - 1
+        else:
+            this_data_ratio = l1/l2
+            this_roll_ratio = l1r/l2r
+        snr_plain.append(this_data_ratio)
+        db_plain.append(10*np.log10(this_data_ratio))
+        snr_rolled_before.append(this_roll_ratio)
+        db_rolled_before.append(10*np.log10(this_roll_ratio))
+    
+    # db_rolled_after = 10*np.log10(pd.Series(snr_plain).rolling(win, center=True).mean().to_numpy())
+    db_rolled_both = 10*np.log10(pd.Series(snr_rolled_before).rolling(window, center=True).mean().to_numpy())
+    
+    return list_1_freq, db_plain, db_rolled_before, db_rolled_both

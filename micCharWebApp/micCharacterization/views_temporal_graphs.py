@@ -9,14 +9,14 @@ class OriginalSignalListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('signal_Graph', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('signal_Graph', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('signal_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.signal_Graph = context['signal_Graph']
-                temp_DB.save()
+                db.signal_Graph = context['signal_Graph']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['signal_Graph']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -30,12 +30,12 @@ class OriginalSignalRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('signal_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.signal_Graph = context['signal_Graph']
-            temp_DB.save()
+            db.signal_Graph = context['signal_Graph']
+            db.save()
             good_graph_list.append(file_path_to_img(context['signal_Graph']))
         context['graphs'] = good_graph_list
         context['type'] = 'original-signal-list-refreshed'
@@ -47,14 +47,14 @@ class CepstrumListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('cepstrum_Graph', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('cepstrum_Graph', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('cepstrum_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.cepstrum_Graph = context['cepstrum_Graph']
-                temp_DB.save()
+                db.cepstrum_Graph = context['cepstrum_Graph']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['cepstrum_Graph']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -68,12 +68,12 @@ class CepstrumRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('cepstrum_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.cepstrum_Graph = context['cepstrum_Graph']
-            temp_DB.save()
+            db.cepstrum_Graph = context['cepstrum_Graph']
+            db.save()
             good_graph_list.append(file_path_to_img(context['cepstrum_Graph']))
         context['graphs'] = good_graph_list
         context['type'] = 'cepstrum-list-refreshed'
@@ -85,14 +85,14 @@ class HilbertPhaseListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('hilbert_Phase_Graph', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('hilbert_Phase_Graph', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('hilbert_Phase_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.hilbert_Phase_Graph = context['hilbert_Phase_Graph']
-                temp_DB.save()
+                db.hilbert_Phase_Graph = context['hilbert_Phase_Graph']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['hilbert_Phase_Graph']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -106,12 +106,12 @@ class HilbertPhaseRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('hilbert_Phase_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.hilbert_Phase_Graph = context['hilbert_Phase_Graph']
-            temp_DB.save()
+            db.hilbert_Phase_Graph = context['hilbert_Phase_Graph']
+            db.save()
             good_graph_list.append(file_path_to_img(context['hilbert_Phase_Graph']))
         context['graphs'] = good_graph_list
         context['type'] = 'hilbert-phase-list-refreshed'
@@ -123,14 +123,14 @@ class OnsetStrengthListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('onset_Strength_Graph', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('onset_Strength_Graph', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('onset_Strength_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.onset_Strength_Graph = context['onset_Strength_Graph']
-                temp_DB.save()
+                db.onset_Strength_Graph = context['onset_Strength_Graph']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['onset_Strength_Graph']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -144,12 +144,12 @@ class OnsetStrengthRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('onset_Strength_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.onset_Strength_Graph = context['onset_Strength_Graph']
-            temp_DB.save()
+            db.onset_Strength_Graph = context['onset_Strength_Graph']
+            db.save()
             good_graph_list.append(file_path_to_img(context['onset_Strength_Graph']))
         context['graphs'] = good_graph_list
         context['type'] = 'onset-strength-list-refreshed'
@@ -161,14 +161,14 @@ class AutocorrelationLagListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('lag_Autocorrelation_Graph', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('lag_Autocorrelation_Graph', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('lag_Autocorrelation_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.lag_Autocorrelation_Graph = context['lag_Autocorrelation_Graph']
-                temp_DB.save()
+                db.lag_Autocorrelation_Graph = context['lag_Autocorrelation_Graph']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['lag_Autocorrelation_Graph']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -182,12 +182,12 @@ class AutocorrelationLagRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('lag_Autocorrelation_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.lag_Autocorrelation_Graph = context['lag_Autocorrelation_Graph']
-            temp_DB.save()
+            db.lag_Autocorrelation_Graph = context['lag_Autocorrelation_Graph']
+            db.save()
             good_graph_list.append(file_path_to_img(context['lag_Autocorrelation_Graph']))
         context['graphs'] = good_graph_list
         context['type'] = 'autocorrelation-lag-list-refreshed'
@@ -199,14 +199,14 @@ class AutocorrelationBPMListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('BPM_Autocorrelation_Graph', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('BPM_Autocorrelation_Graph', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('BPM_Autocorrelation_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.BPM_Autocorrelation_Graph = context['BPM_Autocorrelation_Graph']
-                temp_DB.save()
+                db.BPM_Autocorrelation_Graph = context['BPM_Autocorrelation_Graph']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['BPM_Autocorrelation_Graph']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -220,12 +220,12 @@ class AutocorrelationBPMRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('BPM_Autocorrelation_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.BPM_Autocorrelation_Graph = context['BPM_Autocorrelation_Graph']
-            temp_DB.save()
+            db.BPM_Autocorrelation_Graph = context['BPM_Autocorrelation_Graph']
+            db.save()
             good_graph_list.append(context['BPM_Autocorrelation_Graph'])
         context['graphs'] = good_graph_list
         context['type'] = 'autocorrelation-bpm-list-refreshed'
@@ -237,14 +237,14 @@ class AutocorrTempogramListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('autocorrelation_Tempogram', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('autocorrelation_Tempogram', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('autocorrelation_Tempogram', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.autocorrelation_Tempogram = context['autocorrelation_Tempogram']
-                temp_DB.save()
+                db.autocorrelation_Tempogram = context['autocorrelation_Tempogram']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['autocorrelation_Tempogram']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -258,12 +258,12 @@ class AutocorrTempogramRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('autocorrelation_Tempogram', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.autocorrelation_Tempogram = context['autocorrelation_Tempogram']
-            temp_DB.save()
+            db.autocorrelation_Tempogram = context['autocorrelation_Tempogram']
+            db.save()
             good_graph_list.append(file_path_to_img(context['autocorrelation_Tempogram']))
         context['graphs'] = good_graph_list
         context['type'] = 'autocorrelation-tempogram-list-refreshed'
@@ -275,14 +275,14 @@ class FourierTempogramListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
-        path_list = temp_DBs.values_list('fourier_Tempogram', flat=True)
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
+        path_list = db_list.values_list('fourier_Tempogram', flat=True)
         good_graph_list = []
-        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             if path == None:
                 context = find_graph('fourier_Tempogram', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-                temp_DB.fourier_Tempogram = context['fourier_Tempogram']
-                temp_DB.save()
+                db.fourier_Tempogram = context['fourier_Tempogram']
+                db.save()
                 good_graph_list.append(file_path_to_img(context['fourier_Tempogram']))
             else:
                 good_graph_list.append(file_path_to_img(path))
@@ -296,12 +296,12 @@ class FourierTempogramRefreshedListView(generic.ListView):
     
     def get_context_data(self):
         context = dict()
-        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, temp_DBs, spec_DBs = list_intro()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Temporal')
         good_graph_list = []
-        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, temp_DB, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, temp_DBs, records):
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
             context = find_graph('fourier_Tempogram', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
-            temp_DB.fourier_Tempogram = context['fourier_Tempogram']
-            temp_DB.save()
+            db.fourier_Tempogram = context['fourier_Tempogram']
+            db.save()
             good_graph_list.append(file_path_to_img(context['fourier_Tempogram']))
         context['graphs'] = good_graph_list
         context['type'] = 'fourier-tempogram-list-refreshed'

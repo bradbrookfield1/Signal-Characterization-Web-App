@@ -108,14 +108,24 @@ class TemporalDatabase(models.Model):
         for attr, value in this_dict.items():
             yield attr, value
     
-class SpectralDatabase(models.Model):
+class SNRDatabase(models.Model):
     mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
-    average_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
-    phase_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
     pure_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
     system_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
     given_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
     given_Noise_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
+    average_SNR_Distance_Graph = models.CharField(max_length=1000, default=None, null=True)
+    
+    def attributes(self):
+        this_dict = self.__dict__
+        del this_dict['_state'], this_dict['id'], this_dict['mic_Data_Record_id']
+        for attr, value in this_dict.items():
+            yield attr, value
+    
+class SpectralDatabase(models.Model):
+    mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
+    average_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
+    phase_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
     spectrogram = models.CharField(max_length=1000, default=None, null=True)
     mellin_Spectrogram = models.CharField(max_length=1000, default=None, null=True)
     percussive_Spectrogram = models.CharField(max_length=1000, default=None, null=True)

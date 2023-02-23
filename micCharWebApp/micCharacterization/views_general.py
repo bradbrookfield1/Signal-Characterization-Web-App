@@ -7,10 +7,10 @@ from django.db import router
 from django.views import generic
 from django.utils import timezone
 from .forms import MicDataRecordForm, DeleteAllForm
-from .models import MicDataRecord, Log, TemporalDatabase, SpectralDatabase
+from .models import MicDataRecord, Log, TemporalDatabase, SpectralDatabase, SNRDatabase
 from .views_custom_functions import detail_intro, find_graph, delete_intro, help_get_context, spec_prop_abs_coeff_graphs
 from .graphic_interfacing import file_path_to_img
-import copy, os
+import os
 
 class MicDataRecordListView(generic.ListView):
     model = MicDataRecord
@@ -41,48 +41,53 @@ class MicDataRecordDetailView(generic.DetailView):
         context = super(MicDataRecordDetailView, self).get_context_data(**kwargs)
         mic_Data_Record = self.get_object()
         name = str(mic_Data_Record)
-        context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, spec_DB_dict, temp_DB, spec_DB = detail_intro(context, mic_Data_Record)
-        temp_DB_fixed = copy.deepcopy(temp_DB_dict)
-        spec_DB_fixed = copy.deepcopy(spec_DB_dict)
-        # del temp_DB_fixed['_state'], temp_DB_fixed['id'], temp_DB_fixed['mic_Data_Record_id']
-        # del spec_DB_fixed['_state'], spec_DB_fixed['id'], spec_DB_fixed['mic_Data_Record_id']
+        context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, snr_DB_dict, spec_DB_dict, temp_DB, snr_DB, spec_DB = detail_intro(context, mic_Data_Record)
         
-        for attr, value in temp_DB_fixed.items():
+        for attr, value in temp_DB_dict.items():
             if value == None:
                 context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
                 setattr(temp_DB, attr, context[attr])
                 context[attr] = file_path_to_img(context[attr])
             else:
                 context[attr] = eval('file_path_to_img(temp_DB.' + attr + ')')
-        for attr, value in spec_DB_fixed.items():
+        for attr, value in spec_DB_dict.items():
+            if value == None:
+                context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
+                setattr(spec_DB, attr, context[attr])
+                context[attr] = file_path_to_img(context[attr])
+            else:
+                context[attr] = eval('file_path_to_img(spec_DB.' + attr + ')')
+        for attr, value in snr_DB_dict.items():
             if value == None:
                 if attr == 'pure_Signal_SNR_Graph':
                     if norm_sig and norm_noise:
                         context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                        setattr(spec_DB, attr, context[attr])
-                        context[attr] = file_path_to_img(context[attr])
-                elif attr == 'given_Signal_SNR_Graph':
-                    if norm_noisy_sig and norm_sig:
-                        context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                        setattr(spec_DB, attr, context[attr])
-                        context[attr] = file_path_to_img(context[attr])
-                elif attr == 'given_Noise_SNR_Graph':
-                    if norm_noisy_sig and norm_noise:
-                        context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                        setattr(spec_DB, attr, context[attr])
+                        setattr(snr_DB, attr, context[attr])
                         context[attr] = file_path_to_img(context[attr])
                 elif attr == 'system_Signal_SNR_Graph':
                     if norm_noisy_sig and true_sig:
                         context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                        setattr(spec_DB, attr, context[attr])
+                        setattr(snr_DB, attr, context[attr])
+                        context[attr] = file_path_to_img(context[attr])
+                elif attr == 'given_Signal_SNR_Graph':
+                    if norm_noisy_sig and norm_sig:
+                        context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
+                        setattr(snr_DB, attr, context[attr])
+                        context[attr] = file_path_to_img(context[attr])
+                elif attr == 'given_Noise_SNR_Graph':
+                    if norm_noisy_sig and norm_noise:
+                        context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
+                        setattr(snr_DB, attr, context[attr])
                         context[attr] = file_path_to_img(context[attr])
                 else:
-                    context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                    setattr(spec_DB, attr, context[attr])
-                    context[attr] = file_path_to_img(context[attr])
+                    if norm_sig and norm_noise or norm_noisy_sig and norm_sig or norm_noisy_sig and norm_noise or norm_noisy_sig and true_sig:
+                        context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
+                        setattr(snr_DB, attr, context[attr])
+                        context[attr] = file_path_to_img(context[attr])
             else:
-                context[attr] = eval('file_path_to_img(spec_DB.' + attr + ')')
+                context[attr] = eval('file_path_to_img(snr_DB.' + attr + ')')
         temp_DB.save()
+        snr_DB.save()
         spec_DB.save()
         context['type'] = 'mic-data-record-detail'
         return context
@@ -94,38 +99,44 @@ class MicDataRecordRefreshedDetailView(generic.DetailView):
         context = super(MicDataRecordRefreshedDetailView, self).get_context_data(**kwargs)
         mic_Data_Record = self.get_object()
         name = str(mic_Data_Record)
-        context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict_fixed, spec_DB_dict_fixed, temp_DB, spec_DB = detail_intro(context, mic_Data_Record)
+        context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, snr_DB_dict, spec_DB_dict, temp_DB, snr_DB, spec_DB = detail_intro(context, mic_Data_Record)
         
-        for attr, value in temp_DB_dict_fixed.items():
+        for attr, value in temp_DB_dict.items():
             context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
             setattr(temp_DB, attr, context[attr])
             context[attr] = file_path_to_img(context[attr])
-        for attr, value in spec_DB_dict_fixed.items():
+        for attr, value in spec_DB_dict.items():
+            context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
+            setattr(spec_DB, attr, context[attr])
+            context[attr] = file_path_to_img(context[attr])
+        for attr, value in snr_DB_dict.items():
             if attr == 'pure_Signal_SNR_Graph':
                 if norm_sig and norm_noise:
                     context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                    setattr(spec_DB, attr, context[attr])
+                    setattr(snr_DB, attr, context[attr])
                     context[attr] = file_path_to_img(context[attr])
             elif attr == 'system_Signal_SNR_Graph':
                 if norm_noisy_sig and true_sig:
                     context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                    setattr(spec_DB, attr, context[attr])
+                    setattr(snr_DB, attr, context[attr])
                     context[attr] = file_path_to_img(context[attr])
             elif attr == 'given_Signal_SNR_Graph':
                 if norm_noisy_sig and norm_sig:
                     context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                    setattr(spec_DB, attr, context[attr])
+                    setattr(snr_DB, attr, context[attr])
                     context[attr] = file_path_to_img(context[attr])
             elif attr == 'given_Noise_SNR_Graph':
                 if norm_noisy_sig and norm_noise:
                     context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                    setattr(spec_DB, attr, context[attr])
+                    setattr(snr_DB, attr, context[attr])
                     context[attr] = file_path_to_img(context[attr])
             else:
-                context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-                setattr(spec_DB, attr, context[attr])
-                context[attr] = file_path_to_img(context[attr])
+                if norm_sig and norm_noise or norm_noisy_sig and norm_sig or norm_noisy_sig and norm_noise or norm_noisy_sig and true_sig:
+                    context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
+                    setattr(snr_DB, attr, context[attr])
+                    context[attr] = file_path_to_img(context[attr])
         temp_DB.save()
+        snr_DB.save()
         spec_DB.save()
         context['type'] = 'mic-data-record-detail-refreshed'
         return context
@@ -144,7 +155,9 @@ class MicDataRecordCreateView(generic.CreateView):
         self.object = form.save()
         temporal_Database = TemporalDatabase(mic_Data_Record=self.object, signal_Graph=None, cepstrum_Graph=None, hilbert_Phase_Graph=None, onset_Strength_Graph=None, lag_Autocorrelation_Graph=None, BPM_Autocorrelation_Graph=None, autocorrelation_Tempogram=None, fourier_Tempogram=None)
         temporal_Database.save()
-        spectral_Database = SpectralDatabase(mic_Data_Record=self.object, average_PSD_Graph=None, phase_Spectrum_Graph=None, pure_Signal_SNR_Graph=None, system_Signal_SNR_Graph=None, given_Signal_SNR_Graph=None, given_Noise_SNR_Graph=None, spectrogram=None, mellin_Spectrogram=None, percussive_Spectrogram=None, harmonic_Spectrogram=None, harmonic_Prediction_Graph=None)
+        snr_Database = SNRDatabase(mic_Data_Record=self.object, pure_Signal_SNR_Graph=None, system_Signal_SNR_Graph=None, given_Signal_SNR_Graph=None, given_Noise_SNR_Graph=None, average_SNR_Distance_Graph=None)
+        snr_Database.save()
+        spectral_Database = SpectralDatabase(mic_Data_Record=self.object, average_PSD_Graph=None, phase_Spectrum_Graph=None, spectrogram=None, mellin_Spectrogram=None, percussive_Spectrogram=None, harmonic_Spectrogram=None, harmonic_Prediction_Graph=None)
         spectral_Database.save()
         record_Name = form.cleaned_data['record_Name']
         log = Log(action='Created', record_Name=record_Name, date=timezone.now())
@@ -174,9 +187,13 @@ class MicDataRecordDeleteView(generic.DeleteView):
 
     def post(self, request, *args, **kwargs):
         mic_Data_Record = self.get_object()
-        temp_DB_dict_fixed, spec_DB_dict_fixed = delete_intro(mic_Data_Record)
+        temp_DB_dict_fixed, snr_DB_dict_fixed, spec_DB_dict_fixed = delete_intro(mic_Data_Record)
         for attr, value in temp_DB_dict_fixed.items():
             full_name = 'Uploads/Temporal Graphs/' + attr + '/' + attr + '_' + str(mic_Data_Record.pk) + '.png'
+            if os.path.exists(full_name):
+                os.remove(full_name)
+        for attr, value in snr_DB_dict_fixed.items():
+            full_name = 'Uploads/SNR Graphs/' + attr + '/' + attr + '_' + str(mic_Data_Record.pk) + '.png'
             if os.path.exists(full_name):
                 os.remove(full_name)
         for attr, value in spec_DB_dict_fixed.items():

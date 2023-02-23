@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path
 from django.conf.urls.static import static
-from . import views_general, views_spectral_graphs, views_temporal_graphs
+from . import views_general, views_spectral_graphs, views_temporal_graphs, views_snr_graphs
 
 urlpatterns = [
     path('', views_general.MicDataRecordListView.as_view(), name='mic-data-record-list'),
@@ -34,18 +34,21 @@ urlpatterns = [
     path('fourier-tempogram-list/', views_temporal_graphs.FourierTempogramListView.as_view(), name='fourier-tempogram-list'),
     path('fourier-tempogram-list/refreshed/', views_temporal_graphs.FourierTempogramRefreshedListView.as_view(), name='fourier-tempogram-list-refreshed'),
     
+    path('pure-SNR-list/', views_snr_graphs.PureSNRListView.as_view(), name='pure-SNR-list'),
+    path('pure-SNR-list/refreshed/', views_snr_graphs.PureSNRRefreshedListView.as_view(), name='pure-SNR-list-refreshed'),
+    path('system-SNR-list/', views_snr_graphs.SystemSNRListView.as_view(), name='system-SNR-list'),
+    path('system-SNR-list/refreshed/', views_snr_graphs.SystemSNRRefreshedListView.as_view(), name='system-SNR-list-refreshed'),
+    path('signal-SNR-list/', views_snr_graphs.SignalSNRListView.as_view(), name='signal-SNR-list'),
+    path('signal-SNR-list/refreshed/', views_snr_graphs.SignalSNRRefreshedListView.as_view(), name='signal-SNR-list-refreshed'),
+    path('noise-SNR-list/', views_snr_graphs.NoiseSNRListView.as_view(), name='noise-SNR-list'),
+    path('noise-SNR-list/refreshed/', views_snr_graphs.NoiseSNRRefreshedListView.as_view(), name='noise-SNR-list-refreshed'),
+    path('avg-SNR-dist-list/', views_snr_graphs.AvgSNRDistanceListView.as_view(), name='avg-SNR-dist-list'),
+    path('avg-SNR-dist-list/refreshed/', views_snr_graphs.AvgSNRDistanceRefreshedListView.as_view(), name='avg-SNR-dist-list-refreshed'),
+    
     path('power-spectral-density-list/', views_spectral_graphs.PowerSpectralDensityListView.as_view(), name='power-spectral-density-list'),
     path('power-spectral-density-list/refreshed/', views_spectral_graphs.PowerSpectralDensityRefreshedListView.as_view(), name='power-spectral-density-list-refreshed'),
     path('phase-spectrum-list/', views_spectral_graphs.PhaseSpectrumListView.as_view(), name='phase-spectrum-list'),
     path('phase-spectrum-list/refreshed/', views_spectral_graphs.PhaseSpectrumRefreshedListView.as_view(), name='phase-spectrum-list-refreshed'),
-    path('pure-SNR-list/', views_spectral_graphs.PureSNRListView.as_view(), name='pure-SNR-list'),
-    path('pure-SNR-list/refreshed/', views_spectral_graphs.PureSNRRefreshedListView.as_view(), name='pure-SNR-list-refreshed'),
-    path('system-SNR-list/', views_spectral_graphs.SystemSNRListView.as_view(), name='system-SNR-list'),
-    path('system-SNR-list/refreshed/', views_spectral_graphs.SystemSNRRefreshedListView.as_view(), name='system-SNR-list-refreshed'),
-    path('signal-SNR-list/', views_spectral_graphs.SignalSNRListView.as_view(), name='signal-SNR-list'),
-    path('signal-SNR-list/refreshed/', views_spectral_graphs.SignalSNRRefreshedListView.as_view(), name='signal-SNR-list-refreshed'),
-    path('noise-SNR-list/', views_spectral_graphs.NoiseSNRListView.as_view(), name='noise-SNR-list'),
-    path('noise-SNR-list/refreshed/', views_spectral_graphs.NoiseSNRRefreshedListView.as_view(), name='noise-SNR-list-refreshed'),
     path('spectrogram-list/', views_spectral_graphs.SpectrogramListView.as_view(), name='spectrogram-list'),
     path('spectrogram-list/refreshed/', views_spectral_graphs.SpectrogramRefreshedListView.as_view(), name='spectrogram-list-refreshed'),
     path('mellin-spectrogram-list/', views_spectral_graphs.MellinListView.as_view(), name='mellin-spectrogram-list'),
