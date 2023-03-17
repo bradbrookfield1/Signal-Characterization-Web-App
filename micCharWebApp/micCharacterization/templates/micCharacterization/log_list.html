@@ -1,4 +1,9 @@
 {% extends "micCharacterization/base.html" %}
+{% block dbChange %}
+    <a class="navbar-brand mr-4" href="{% url 'mic-characterization:mic-data-record-list' %}">
+        Microphone Characterization Database
+    </a>
+{% endblock dbChange %}
 {% block content %}
 	<div class="row">
 		<div class="col-md">
@@ -9,7 +14,7 @@
 					</h1>
 				</div>
 				<div class="col-md-2">
-					<a href="{% url 'log-confirm-delete-all' %}">
+					<a href="{% url 'mic-characterization:log-confirm-delete-all' %}">
 						<button class="btn btn-outline-danger">
 							Delete All
 						</button>
@@ -26,7 +31,7 @@
 							</small><br>
 						</div>
 						<div class="col-md-4">
-							<a href="{% url 'log-confirm-delete' pk=log.pk %}">
+							<a href="{% url 'mic-characterization:log-confirm-delete' pk=log.pk %}">
 								<button class="btn btn-outline-danger">
 									Delete
 								</button>

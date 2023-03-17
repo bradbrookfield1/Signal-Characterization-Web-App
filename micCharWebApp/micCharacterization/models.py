@@ -55,9 +55,6 @@ class MicDataRecord(models.Model):
     measured_Signal_File = models.FileField(upload_to='Recordings/measured_Signal_File/', blank=True, null=True)
     noise_File = models.FileField(upload_to='Recordings/noise_File/', blank=True, null=True)
     true_Signal_File = models.FileField(upload_to='Recordings/true_Signal_File/', blank=True, null=True)
-    reference_Noisy_Signal_File = models.FileField(upload_to='Recordings/reference_Noisy_Signal_File/', blank=True, null=True)
-    reference_Signal_File = models.FileField(upload_to='Recordings/reference_Signal_File/', blank=True, null=True)
-    reference_Noise_File = models.FileField(upload_to='Recordings/reference_Noise_File/', blank=True, null=True)
     
     class Meta:
         ordering = ('pk',)
@@ -90,51 +87,3 @@ class MicDataRecord(models.Model):
                     file_name_list.append(None)
             file_set.append(file_name_list)
         return file_set
-
-class TemporalDatabase(models.Model):
-    mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)    
-    signal_Graph = models.CharField(max_length=1000, default=None, null=True)
-    cepstrum_Graph = models.CharField(max_length=1000, default=None, null=True)
-    hilbert_Phase_Graph = models.CharField(max_length=1000, default=None, null=True)
-    onset_Strength_Graph = models.CharField(max_length=1000, default=None, null=True)
-    lag_Autocorrelation_Graph = models.CharField(max_length=1000, default=None, null=True)
-    BPM_Autocorrelation_Graph = models.CharField(max_length=1000, default=None, null=True)
-    autocorrelation_Tempogram = models.CharField(max_length=1000, default=None, null=True)
-    fourier_Tempogram = models.CharField(max_length=1000, default=None, null=True)
-    
-    def attributes(self):
-        this_dict = self.__dict__
-        del this_dict['_state'], this_dict['id'], this_dict['mic_Data_Record_id']
-        for attr, value in this_dict.items():
-            yield attr, value
-    
-class SNRDatabase(models.Model):
-    mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
-    pure_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
-    system_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
-    given_Signal_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
-    given_Noise_SNR_Graph = models.CharField(max_length=1000, default=None, null=True)
-    average_SNR_Distance_Graph = models.CharField(max_length=1000, default=None, null=True)
-    
-    def attributes(self):
-        this_dict = self.__dict__
-        del this_dict['_state'], this_dict['id'], this_dict['mic_Data_Record_id']
-        for attr, value in this_dict.items():
-            yield attr, value
-    
-class SpectralDatabase(models.Model):
-    mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
-    average_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
-    phase_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
-    spectrogram = models.CharField(max_length=1000, default=None, null=True)
-    mellin_Spectrogram = models.CharField(max_length=1000, default=None, null=True)
-    percussive_Spectrogram = models.CharField(max_length=1000, default=None, null=True)
-    harmonic_Spectrogram = models.CharField(max_length=1000, default=None, null=True)
-    harmonic_Prediction_Graph = models.CharField(max_length=1000, default=None, null=True)
-    
-    def attributes(self):
-        this_dict = self.__dict__
-        del this_dict['_state'], this_dict['id'], this_dict['mic_Data_Record_id']
-        del this_dict['harmonic_Prediction_Graph']
-        for attr, value in this_dict.items():
-            yield attr, value

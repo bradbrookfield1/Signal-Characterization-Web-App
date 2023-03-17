@@ -1,48 +1,39 @@
 {% extends "micCharacterization/base.html" %}
 {% block content %}
-	<div class="row">
-		<div class="col-md">
-			<h1>
-				Microphone Data Record List
-			</h1>
-			<article class="media content-section">
-				<table>
-					{% for micDataRecord in object_list %}
-						<tr>
-							{% if micDataRecord.noisy_Signal_File %}
-								<td class="d1">
-									{{ micDataRecord.pk }} - <a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
-									- {{ micDataRecord.noisy_Signal_File }}
-								</td>
-							{% elif micDataRecord.measured_Signal_File %}
-								<td class="d1">
-									{{ micDataRecord.pk }} - <a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
-									- {{ micDataRecord.measured_Signal_File }}
-								</td>
-							{% elif micDataRecord.noise_File %}
-								<td class="d1">
-									{{ micDataRecord.pk }} - <a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
-									- {{ micDataRecord.noise_File }}
-								</td>
-							{% else %}
-								<td class="d1">
-									{{ micDataRecord.pk }} - <a href="{% url 'mic-data-record-detail' pk=micDataRecord.pk %}">{{ micDataRecord.record_Name }}</a>
-									- {{ micDataRecord.true_Signal_File }}
-								</td>
-							{% endif %}
-							<td class="d2">
-								&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-							</td>
-							<td class="d3">
-								<a href="{% url 'mic-data-record-confirm-delete' pk=micDataRecord.pk %}">
-									Delete
-								</a>
-							</td>
-						</tr>
-					{% endfor %}
-				</table>
-			</article>
-		</div>
-	</div>
-	<br><br>
+	<h1>
+		Microphone Data Record List
+	</h1>
+	<article class="media content-section">
+		<table>
+			{% for obj in object_list %}
+				<tr>
+					{% if obj.noisy_Signal_File %}
+						<td class="d1">
+							{{ obj.pk }} - {{ obj.record_Name }} - {{ obj.noisy_Signal_File }}
+						</td>
+					{% elif obj.measured_Signal_File %}
+						<td class="d1">
+							{{ obj.pk }} - {{ obj.record_Name }} - {{ obj.measured_Signal_File }}
+						</td>
+					{% elif obj.noise_File %}
+						<td class="d1">
+							{{ obj.pk }} - {{ obj.record_Name }} - {{ obj.noise_File }}
+						</td>
+					{% else %}
+						<td class="d1">
+							{{ obj.pk }} - {{ obj.record_Name }} - {{ obj.true_Signal_File }}
+						</td>
+					{% endif %}
+					<td class="d2">
+						&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+					</td>
+					<td class="d3">
+						<a href="{% url 'mic-characterization:mic-data-record-confirm-delete' pk=obj.pk %}">
+							Delete
+						</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+	</article><br><br>
 {% endblock content %}

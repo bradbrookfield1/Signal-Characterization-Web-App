@@ -1,0 +1,16 @@
+{% extends "spectralDatabase/list_with_sidebar.html" %}
+{% block chartListTitle %}
+	{% if type == 'spectral:phase-spectrum-list' or type == 'spectral:phase-spectrum-list-refreshed' %}
+		Phase Spectrum List
+	{% elif type == 'spectral:spectrogram-list' or type == 'spectral:spectrogram-list-refreshed' %}
+		Spectrogram List
+	{% elif type == 'spectral:mellin-spectrogram-list' or type == 'spectral:mellin-spectrogram-list-refreshed' %}
+		Mellin Scaled Spectrogram List
+	{% elif type == 'spectral:percussive-components-list' or type == 'spectral:percussive-components-list-refreshed' %}
+		Percussive Components List
+	{% elif type == 'spectral:harmonic-components-list' or type == 'spectral:harmonic-components-list-refreshed' %}
+		Harmonic Components List
+	{% elif type == 'spectral:harmonic-prediction-list' or type == 'spectral:harmonic-prediction-list-refreshed' %}
+		Harmonic Fundamental Frequency Prediction List
+	{% endif %}
+{% endblock chartListTitle %}

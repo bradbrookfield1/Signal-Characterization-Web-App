@@ -5,34 +5,33 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-		<link rel="stylesheet" type="text/css" href="{% static 'micCharacterization/main.css' %}">
+		<link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
 		<title>Microphone Characterization</title>
 	</head>
 	<body>
 		<header class="site-header">
 			<nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
 				<div class="container">
-					<a class="navbar-brand mr-4" href="/">
-						Microphone Characterization
-					</a>
+					{% block dbChange %}
+						<a class="navbar-brand mr-4" href="{% url 'temporal:list' %}">
+							Microphone Characterization Database
+						</a>
+					{% endblock dbChange %}
 					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
 						<span class="navbar-toggler-icon"></span>
 					</button>
 					<div class="collapse navbar-collapse" id="navbarToggle">
 						{% block contentnav %}
 							<div class="navbar-nav mr-auto">
-								<a class="nav-item nav-link" href="{% url 'mic-data-record-list' %}">
-									Home
-								</a>
-								<a class="nav-item nav-link" href="{% url 'mic-data-record-create' %}">
+								<a class="nav-item nav-link" href="{% url 'mic-characterization:mic-data-record-create' %}">
 									New Record
 								</a>
 							</div>
 							<div class="navbar-nav">
-								<a class="nav-item nav-link" href="{% url 'acoustic-prop' %}">
+								<a class="nav-item nav-link" href="{% url 'mic-characterization:acoustic-prop' %}">
 									Propagation
 								</a>
-								<a class="nav-item nav-link" href="{% url 'log-list' %}">
+								<a class="nav-item nav-link" href="{% url 'mic-characterization:log-list' %}">
 									Logs
 								</a>
 							</div>
@@ -41,127 +40,20 @@
 				</div>
 			</nav>
 		</header>
-		{% block replacesidebar %}
-			<main role="main" class="container">
-				<div class="row">
-					<div class="col-md-8">
-						{% if messages %}
-							{% for message in messages %}
-								<div class="alert alert-{{ message.tags }}">
-									{{ message }}
-								</div>
-							{% endfor %}
-						{% endif %}
-						{% block content %}{% endblock content %}
-					</div>
-					<div class="col-md-4">
-						<div class="content-section">
-							<h3>Compare Characteristics</h3>
-							<p class="text-muted">
-								<ul class="list-group">
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'original-signal-list' %}">
-											Original Signals
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'cepstrum-list' %}">
-											Cepstrums
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'hilbert-phase-list' %}">
-											Hilbert Phases
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'onset-strength-list' %}">
-											Onset Strengths
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'autocorrelation-lag-list' %}">
-											Autocorrelations (Lag)
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'autocorrelation-bpm-list' %}">
-											Autocorrelations (BPM)
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'autocorrelation-tempogram-list' %}">
-											Autocorrelation Tempograms
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'fourier-tempogram-list' %}">
-											Fourier Tempograms
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'power-spectral-density-list' %}">
-											Power Spectral Densities
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'phase-spectrum-list' %}">
-											Phase Spectrums
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'pure-SNR-list' %}">
-											SNR Given Both
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'system-SNR-list' %}">
-											SNR System Approach
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'signal-SNR-list' %}">
-											SNR Given Signal
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'noise-SNR-list' %}">
-											SNR Given Noise
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'avg-SNR-dist-list' %}">
-											Avg SNR & Distance 
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'spectrogram-list' %}">
-											Spectrograms
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'mellin-spectrogram-list' %}">
-											Mellin Spectrograms
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'percussive-components-list' %}">
-											Percussive Components
-										</a>
-									</li>
-									<li class="list-group-item list-group-item-light">
-										<a class="nav-item nav-link" href="{% url 'harmonic-components-list' %}">
-											Harmonic Components
-										</a>
-									</li>
-								</ul>
-							</p>
-						</div>
-					</div>
+		<main role="main" class="container">
+			<div class="row">
+				<div class="col">
+					{% if messages %}
+						{% for message in messages %}
+							<div class="alert alert-{{ message.tags }}">
+								{{ message }}
+							</div>
+						{% endfor %}
+					{% endif %}
+					{% block content %}{% endblock content %}
 				</div>
-				{% block beneathsidebar %}{% endblock beneathsidebar %}
-			</main>
-		{% endblock replacesidebar %}
+			</div>
+		</main>
 		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

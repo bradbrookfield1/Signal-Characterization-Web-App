@@ -1,4 +1,9 @@
 {% extends "micCharacterization/base.html" %}
+{% block dbChange %}
+    <a class="navbar-brand mr-4" href="{% url 'mic-characterization:mic-data-record-list' %}">
+        Microphone Characterization Database
+    </a>
+{% endblock dbChange %}
 {% block content %}
 	<form method="POST" enctype="multipart/form-data">
 		{% csrf_token %}
@@ -27,14 +32,11 @@
 				<div class="col">
 					True Signal: {{ form.true_Signal_File }}<br><br>
 
-					Measured Signal: {{ form.measured_Signal_File }}<br>
-					Measured Signal Reference: {{ form.reference_Signal_File }}<br><br>
+					Measured Signal: {{ form.measured_Signal_File }}<br><br>
 
-					Noisy Signal: {{ form.noisy_Signal_File }}<br>
-					Noisy Signal Reference: {{ form.reference_Noisy_Signal_File }}<br><br>
+					Noisy Signal: {{ form.noisy_Signal_File }}<br><br>
 
 					Measured Noise: {{ form.noise_File }}<br>
-					Measured Noise Reference: {{ form.reference_Noise_File }}<br>
 				</div>
 			</div><br>
 		</fieldset>
@@ -46,7 +48,7 @@
 			<button type="reset" class="btn btn-outline-info">
 				Reset
 			</button>
-			<a href="{% url 'mic-data-record-list' %}">
+			<a href="{% url 'mic-characterization:mic-data-record-list' %}">
 				<button type="button" class="btn btn-outline-info">
 					Cancel
 				</button>

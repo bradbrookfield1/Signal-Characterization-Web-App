@@ -1,51 +1,30 @@
 {% extends "micCharacterization/base.html" %}
+{% block dbChange %}
+    <a class="navbar-brand mr-4" href="{% url 'mic-characterization:mic-data-record-list' %}">
+        Microphone Characterization Database
+    </a>
+{% endblock dbChange %}
 {% block content %}
     <h1>
         Atmospheric Spectral Propagation Attenuation Model
     </h1>
-    {% if graphs.0 %}
-        <div class="row">
-            <div class="col-md-9">
-                <img src="data:image/png;base64, {{ graphs.0|safe }}" class="img-fluid">
-            </div>
-        </div><br>
-    {% endif %}
-    {% if graphs.1 %}
-        <div class="row">
-            <div class="col-md-9">
-                <img src="data:image/png;base64, {{ graphs.1|safe }}" class="img-fluid">
-            </div>
-        </div><br>
-    {% endif %}
-    {% if graphs.2 %}
-        <div class="row">
-            <div class="col-md-9">
-                <img src="data:image/png;base64, {{ graphs.2|safe }}" class="img-fluid">
-            </div>
-        </div>
-    {% endif %}
-{% endblock content %}
-{% block beneathsidebar %}
-                <div class="row">
+            <div class="row">
     {% for graph in graphs %}
-        {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 %}
+        {% if not forloop.counter0|divisibleby:2 %}
+                <div class="col-md-6">
+                    <center>
+                        <img src="data:image/png;base64, {{ graph|safe }}" class="img-fluid">
+                    </center>
+                </div>
         {% else %}
-            {% if forloop.counter0|divisibleby:2 %}
-                    <div class="col-md-6">
-                        <center>
-                            <img src="data:image/png;base64, {{ graph|safe }}" class="img-fluid">
-                        </center>
-                    </div>
-            {% else %}
-                </div><br>
-                <div class="row">
-                    <div class="col-md-6">
-                        <center>
-                            <img src="data:image/png;base64, {{ graph|safe }}" class="img-fluid">
-                        </center>
-                    </div>
-            {% endif %}
+            </div><br>
+            <div class="row">
+                <div class="col-md-6">
+                    <center>
+                        <img src="data:image/png;base64, {{ graph|safe }}" class="img-fluid">
+                    </center>
+                </div>
         {% endif %}
     {% endfor %}
-                </div><br><br><br><br><br><br><br><br><br>
-{% endblock beneathsidebar %}
+            </div><br><br><br><br><br><br><br><br><br>
+{% endblock content %}

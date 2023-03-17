@@ -15,8 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('micCharacterization.urls')),
-]
+    path('', include('micCharacterization.urls', namespace='mic-characterization')),
+    path('temporal/', include('temporalDatabase.urls', namespace='temporal')),
+    path('spectral/', include('spectralDatabase.urls', namespace='spectral')),
+    path('snr/', include('snrDatabase.urls', namespace='SNR')),
+    path('statistical/', include('statisticalDatabase.urls', namespace='stat'))
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

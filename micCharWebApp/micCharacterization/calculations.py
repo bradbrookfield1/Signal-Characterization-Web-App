@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
-from .constants import freqs, window, spl_speed, spl_src, vel_array, dir_fact
+from .constants import freqs, window, speed_noise_spl_dict, spl_speed, spl_src, vel_array, dir_fact
 from .constants import tunnel_dist, temperature, relative_humidity, p_bar, p_ref
 
 def calc_coeff(freqs, distance, temperature, rel_hum, p_bar, p_ref):
     p_sat_ref = p_sat_ref_easy(temperature)
     mol_conc_wv = mol_conc_water_vapor(rel_hum, p_sat_ref, p_bar, p_ref)
-    oxy_freq = oxy_relax_freq(p_bar, p_ref, mol_conc_wv)
-    nit_freq = nit_relax_freq(temperature, p_bar, p_ref, mol_conc_wv)
+    oxy_freq = oxy_relax_freq(p_bar, p_ref, 100*mol_conc_wv)
+    nit_freq = nit_relax_freq(temperature, p_bar, p_ref, 100*mol_conc_wv)
     abs_coeff_db = distance*absorption_coeff(temperature, p_bar, p_ref, freqs, oxy_freq, nit_freq)
     
     mol_mix = mol_mass_mix(mol_conc_wv)
@@ -61,10 +61,25 @@ def db_array_to_mean(db_array):
     avg_ratio = np.mean(value_db_conv(db_array, 'ratio', 'power', 'value'))
     return value_db_conv(avg_ratio, 'ratio', 'power', 'db')
 
-def find_avg_snr_db_dist_array(dist_array, snr_db=None, special_dist=tunnel_dist):
+def find_avg_snr_db_dist_array(dist_array, name, snr_db=None, special_dist=tunnel_dist):
+    if (name == None) or not ('13' in name or '15' in name or '18' in name or '20' in name):
+        speed_spl = speed_noise_spl_dict['20']
+    else:
+        if '13' in name:
+            speed_spl = speed_noise_spl_dict['13']
+            # speed_spl = 76
+        elif '15' in name:
+            speed_spl = speed_noise_spl_dict['15']
+            # speed_spl = 80
+        elif '18' in name:
+            speed_spl = speed_noise_spl_dict['18']
+            # speed_spl = 86
+        else:
+            speed_spl = speed_noise_spl_dict['20']
+            # speed_spl = 90
     if not type(dist_array) == np.ndarray:
         dist_array = [dist_array]
-    snr_pred_db = calc_snr_pred(freqs, spl_speed, spl_src, dir_fact, special_dist, vel_array, temperature, relative_humidity, p_bar, p_ref)
+    snr_pred_db = calc_snr_pred(freqs, speed_spl, spl_src, dir_fact, special_dist, vel_array, temperature, relative_humidity, p_bar, p_ref)
     if snr_db and special_dist:
         diff = db_array_to_mean(snr_pred_db) - snr_db
     else:
@@ -73,7 +88,7 @@ def find_avg_snr_db_dist_array(dist_array, snr_db=None, special_dist=tunnel_dist
     snr_avg_db_dist_model = []
     snr_avg_db_dist = []
     for dist in dist_array:
-        snr_avg_db_model = db_array_to_mean(calc_snr_pred(freqs, spl_speed, spl_src, dir_fact, dist, vel_array, temperature, relative_humidity, p_bar, p_ref))
+        snr_avg_db_model = db_array_to_mean(calc_snr_pred(freqs, speed_spl, spl_src, dir_fact, dist, vel_array, temperature, relative_humidity, p_bar, p_ref))
         snr_avg_db_dist_model.append(snr_avg_db_model)
         snr_avg_db_dist.append(snr_avg_db_model - diff)
     if diff == 0:
@@ -100,6 +115,7 @@ def p_sat_ref_easy(temperature):
 
 def mol_conc_water_vapor(rel_hum, p_sat_ref, p_bar, p_ref):
     return (100*rel_hum*(p_sat_ref/(p_bar/p_ref)))/100
+    # return (100*rel_hum*(p_sat_ref*p_ref/(p_bar)))/100
 
 def mol_mass_mix(mol_conc_water_vapor):
     return mol_conc_water_vapor*0.018016 + (1 - mol_conc_water_vapor)*0.02897
@@ -118,18 +134,23 @@ def air_density(temperature, p_bar, mol_mass_mix):
 
 def oxy_relax_freq(p_bar, p_ref, mol_conc_water_vapor):
     return (p_bar/p_ref)*(24 + 40400*mol_conc_water_vapor*((0.02 + mol_conc_water_vapor)/(0.391 + mol_conc_water_vapor)))
+    # return (1/p_ref)*(24 + 40400*mol_conc_water_vapor*((0.02 + mol_conc_water_vapor)/(0.391 + mol_conc_water_vapor)))
 
 # def nit_relax_freq(temperature, p_ref, mol_conc_water_vapor):
 #     return (1/(p_ref/101325))*np.power(293.15/temperature, 0.5)*(9 + 280*mol_conc_water_vapor*np.exp(-4.17*(np.power(293.15/temperature, 1/3) - 1)))
 
 def nit_relax_freq(temperature, p_bar, p_ref, mol_conc_water_vapor):
-    return (p_bar/p_ref)*np.power(293.15/temperature, 0.5)*(9 + 280*mol_conc_water_vapor*np.exp(-4.17*(np.power(293.15/temperature, 1/3) - 1)))
+    return (p_bar/p_ref)*np.power(temperature/293.15, -0.5)*(9 + 280*mol_conc_water_vapor*np.exp(-4.17*(np.power(temperature/293.15, -1/3) - 1)))
+    # return (1/p_ref)*np.power(temperature/293.15, -0.5)*(9 + 280*mol_conc_water_vapor*np.exp(-4.17*(np.power(temperature/293.15, -1/3) - 1)))
 
 # def absorption_coeff(temperature, p_ref, freq, oxy_relax_freq, nit_relax_freq):
 #     return (np.power(freq, 2)/(p_ref/101325))*(1.84*(10**-11)*np.power(temperature/293.15, 0.5) + np.power(temperature/293.15, -5/2)*(0.01278*(np.exp(-2239.1/temperature)/(oxy_relax_freq + np.power(freq, 2)/oxy_relax_freq)) + 0.1068*(np.exp(-3352/temperature)/(nit_relax_freq + np.power(freq, 2)/nit_relax_freq))))
 
 def absorption_coeff(temperature, p_bar, p_ref, freq, oxy_relax_freq, nit_relax_freq):
-    return 20*np.log10(np.exp(np.power(freq, 2)*np.power(temperature/293.15, 1/2)*(1.84*(10**-11)*(p_ref/p_bar) + np.power(temperature/293.15, -3)*(0.01275*(np.exp(-2239.1/temperature)/(oxy_relax_freq + np.power(freq, 2)/oxy_relax_freq)) + 0.1068*(np.exp(-3352/temperature)/(nit_relax_freq + np.power(freq, 2)/nit_relax_freq))))))
+    # return 10*np.log10(np.exp(np.power(freq, 2)*np.power(temperature/293.15, 1/2)*(1.84*(10**-11)*(p_ref/p_bar) + np.power(temperature/293.15, -3)*(0.01275*(np.exp(-2239.1/temperature)/(oxy_relax_freq + np.power(freq, 2)/oxy_relax_freq)) + 0.1068*(np.exp(-3352/temperature)/(nit_relax_freq + np.power(freq, 2)/nit_relax_freq))))))
+    # return 10*np.log10(np.exp(np.power(freq/p_bar, 2)*(1.84*(10**-11)*np.power(p_bar/p_ref, -1)*np.power(temperature/293.15, 1/2) + np.power(temperature/293.15, -5/2)*(0.01275*(np.exp(-2239/temperature)/(oxy_relax_freq/p_bar + np.power(freq/p_bar, 2)/(oxy_relax_freq/p_bar))) + 0.1068*(np.exp(-3352/temperature)/(nit_relax_freq/p_bar + np.power(freq/p_bar, 2)/(nit_relax_freq/p_bar)))))))
+    return 10*np.log10(np.exp(np.power(freq, 2)*(1.84*(10**-11)*np.power(p_bar/p_ref, -1)*np.power(temperature/293.15, 1/2) + np.power(temperature/293.15, -5/2)*(0.01275*np.exp(-2239/temperature)*(oxy_relax_freq/(np.power(freq, 2) + np.power(oxy_relax_freq, 2))) + 0.1068*np.exp(-3352/temperature)*(nit_relax_freq/(np.power(freq, 2) + np.power(nit_relax_freq, 2)))))))
+    # return 10*np.log10(np.exp(np.power(freq/p_bar, 2)*(1.84*(10**-11)*np.power(p_bar/p_ref, -1)*np.power(temperature/293.15, 1/2) + np.power(temperature/293.15, -5/2)*(0.01275*np.exp(-2239/temperature)*((oxy_relax_freq/p_bar)/(np.power(freq/p_bar, 2) + np.power(oxy_relax_freq/p_bar, 2))) + 0.1068*np.exp(-3352/temperature)*((nit_relax_freq/p_bar)/(np.power(freq/p_bar, 2) + np.power(nit_relax_freq/p_bar, 2)))))))
 
 def fft_vectorized(sig, r_harmonic):
     sig = np.asarray(sig, dtype=float)

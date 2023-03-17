@@ -10,8 +10,7 @@ class MicDataRecordForm(forms.ModelForm):
     class Meta:
         model = MicDataRecord
         fields = ['record_Name', 'description', 'prediction_Harmonics',
-                  'noisy_Signal_File', 'measured_Signal_File', 'noise_File', 'true_Signal_File',
-                  'reference_Noisy_Signal_File', 'reference_Signal_File', 'reference_Noise_File']
+                  'noisy_Signal_File', 'measured_Signal_File', 'noise_File', 'true_Signal_File']
     
     def clean(self):
         cleaned_data = super().clean()

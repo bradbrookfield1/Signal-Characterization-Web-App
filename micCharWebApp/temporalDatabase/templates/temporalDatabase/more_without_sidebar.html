@@ -1,0 +1,10 @@
+{% extends "temporalDatabase/list_without_sidebar.html" %}
+{% block chartListTitle %}
+	{% if type == 'temporal:cepstrum-list' or type == 'temporal:cepstrum-list-refreshed' %}
+		Cepstrum List
+	{% elif type == 'temporal:hilbert-phase-list' or type == 'temporal:hilbert-phase-list-refreshed' %}
+		Hilbert Phase List
+	{% elif type == 'temporal:onset-strength-list' or type == 'temporal:onset-strength-list-refreshed' %}
+		Onset Strength List
+	{% endif %}
+{% endblock chartListTitle %}

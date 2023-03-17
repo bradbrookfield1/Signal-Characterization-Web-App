@@ -37,7 +37,7 @@ def get_phase_spectrum(sig, name, mic_Data_Record):
 
 def get_spectrogram(lib_list, name, mic_Data_Record):
     ps_fft_data = librosa.stft(lib_list[1])
-    ps_fft_db_data = librosa.amplitude_to_db(abs(ps_fft_data), ref=np.max)
+    ps_fft_db_data = librosa.amplitude_to_db(np.abs(ps_fft_data), ref=np.max)
     plt.figure(1, figsize=fig_size).clf()
     librosa.display.specshow(
         ps_fft_db_data,
@@ -74,6 +74,7 @@ def get_mellin(lib_list, name, mic_Data_Record):
 def get_percussive(lib_list, name, mic_Data_Record):
     spec_fft_data = librosa.stft(lib_list[1])
     harm, perc = librosa.decompose.hpss(spec_fft_data)
+    perc_play = librosa.istft(perc)
     perc_db_data = librosa.amplitude_to_db(np.abs(perc), ref=np.max(np.abs(spec_fft_data)))
     plt.figure(1, figsize=fig_size).clf()
     librosa.display.specshow(

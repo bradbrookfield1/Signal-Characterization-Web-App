@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'micCharacterization.apps.MiccharacterizationConfig',
+    'temporalDatabase.apps.TemporaldatabaseConfig',
+    'snrDatabase.apps.SnrdatabaseConfig',
+    'spectralDatabase.apps.SpectraldatabaseConfig',
+    'statisticalDatabase.apps.StatisticaldatabaseConfig',
     'acoustics',
 ]
 

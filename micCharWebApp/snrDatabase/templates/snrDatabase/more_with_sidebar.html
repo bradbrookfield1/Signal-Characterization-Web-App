@@ -1,0 +1,12 @@
+{% extends "snrDatabase/list_with_sidebar.html" %}
+{% block chartListTitle %}
+	{% if type == 'SNR:system-SNR-list' or type == 'SNR:system-SNR-list-refreshed' %}
+		SNR System Approach
+	{% elif type == 'SNR:signal-SNR-list' or type == 'SNR:signal-SNR-list-refreshed' %}
+		SNR Given Signal List
+	{% elif type == 'SNR:noise-SNR-list' or type == 'SNR:noise-SNR-list-refreshed' %}
+		SNR Given Noise List
+	{% elif type == 'SNR:avg-SNR-dist-list' or type == 'SNR:avg-SNR-dist-list-refreshed' %}
+		Average SNR vs. Distance List
+	{% endif %}
+{% endblock chartListTitle %}

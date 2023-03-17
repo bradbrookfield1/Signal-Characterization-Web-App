@@ -1,0 +1,10 @@
+{% extends "temporalDatabase/list_with_sidebar.html" %}
+{% block chartListTitle %}
+	{% if type == 'temporal:autocorrelation-bpm-list' or type == 'temporal:autocorrelation-bpm-list-refreshed' %}
+		Autocorrelation (BPM) List
+	{% elif type == 'temporal:autocorrelation-tempogram-list' or type == 'temporal:autocorrelation-tempogram-list-refreshed' %}
+		Autocorrelation Tempogram List
+	{% elif type == 'temporal:fourier-tempogram-list' or type == 'temporal:fourier-tempogram-list-refreshed' %}
+		Fourier Tempogram List
+	{% endif %}
+{% endblock chartListTitle %}

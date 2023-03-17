@@ -1,0 +1,71 @@
+{% extends "statisticalDatabase/base.html" %}
+{% block dbChange %}
+	<a class="navbar-brand mr-4" href="{% url 'temporal:detail' pk=statisticaldatabase.pk %}">
+		Statistical Database
+	</a>
+{% endblock dbChange %}
+{% block content %}
+	<h1>
+		Microphone Data Record Statistical Details
+	</h1><br>
+	<div class="row">
+		<div class="col-md-6">
+			Record Name: {{ object.record_Name }}
+		</div>
+		<div class="col-md-6">
+			Prediction Harmonics: {{ object.prediction_Harmonics }}
+		</div>
+	</div><br><br>
+	<div class="row">
+		<div class="col-md-6">
+			Record Description: {{ object.description }}
+		</div>
+	</div><br><br>
+	<div class="row">
+		<div class="col">
+			True Signal: {{ true_Signal_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/true_Signal_File/{{ true_Signal_File }}" type="audio/wav">
+			</audio><br><br>
+			Measured Signal: {{ measured_Signal_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/measured_Signal_File/{{ measured_Signal_File }}" type="audio/wav">
+			</audio><br><br>
+			Noisy Signal: {{ noisy_Signal_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/noisy_Signal_File/{{ noisy_Signal_File }}" type="audio/wav">
+			</audio><br><br>
+			Measured Noise: {{ noise_File }}<br>
+			<audio id="Player" controls>
+				<source src="/Uploads/Recordings/noise_File/{{ noise_File }}" type="audio/wav">
+			</audio><br><br>
+		</div>
+	</div>
+	<div class="row">
+		<a href="{% url 'mic-characterization:mic-data-record-update' pk=statisticaldatabase.pk %}">
+			<button class="btn btn-primary">
+				Update
+			</button>
+		</a>&nbsp;
+		<a href="{% url 'stat:list' %}">
+			<button class="btn btn-outline-info">
+				Back
+			</button>
+		</a>&nbsp;
+		<a href="{% url 'mic-characterization:mic-data-record-confirm-delete' pk=statisticaldatabase.pk %}">
+			<button class="btn btn-outline-info">
+				Delete
+			</button>
+		</a>&nbsp;
+		<a href="{% url 'stat:detail-refreshed' pk=statisticaldatabase.pk %}">
+			<button class="btn btn-outline-info">
+				Refresh
+			</button>
+		</a>
+	</div><br><br>
+{% endblock content %}
+{% block beneathsidebar %}
+	<h2>
+		Statistical Characteristics
+	</h2><br><br>
+{% endblock beneathsidebar %}

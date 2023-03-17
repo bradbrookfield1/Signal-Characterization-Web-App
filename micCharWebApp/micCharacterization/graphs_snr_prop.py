@@ -26,7 +26,7 @@ def get_SNR(list_1, list_2, snr_type, graph_type, name, mic_Data_Record):
     return get_graph('SNR Graphs', graph_type, mic_Data_Record)
 
 def get_avg_snr_vs_dist(dist_array, name=None, mic_Data_Record=None, snr_db=None, special_dist=tunnel_dist):
-    dist_array, snr_avg_db_dist, snr_avg_db_dist_model = find_avg_snr_db_dist_array(dist_array, snr_db, special_dist)
+    dist_array, snr_avg_db_dist, snr_avg_db_dist_model = find_avg_snr_db_dist_array(dist_array, name, snr_db, special_dist)
     plt.figure(1, figsize=fig_size).clf()
     titl = 'Average SNR per Distance' if name == None else name + '\nAverage SNR per Distance'
     plt.title(titl)
@@ -68,7 +68,7 @@ def get_spec_prop_abs_coeff_hum():
     plt.figure(1, figsize=fig_size).clf()
     plt.title('Spectral Sound Absorption Coefficient\nVarying Relative Humidity')
     plt.xlabel(r'Frequency/Pressure $\left(\frac{Hz}{atm}\right)$')
-    plt.ylabel(r'Absorption Coefficient $\left(\frac{dB}{m \cdot atm}\right)$')
+    plt.ylabel(r'Absorption Coefficient $\left(\frac{dB}{100m \cdot atm}\right)$')
     plt.grid(True)
     for i in range(len(rel_hum_abs_coeff)):
         plt.loglog(freqs, rel_hum_abs_coeff[i], label=str(rel_hum_array[i]*100) + ' %', lw=0.75, alpha=0.75)
@@ -84,7 +84,7 @@ def get_spec_prop_abs_coeff_temp():
     plt.figure(1, figsize=fig_size).clf()
     plt.title('Spectral Sound Absorption Coefficient\nVarying Temperature')
     plt.xlabel(r'Frequency/Pressure $\left(\frac{Hz}{atm}\right)$')
-    plt.ylabel(r'Absorption Coefficient $\left(\frac{dB}{m \cdot atm}\right)$')
+    plt.ylabel(r'Absorption Coefficient $\left(\frac{dB}{100m \cdot atm}\right)$')
     plt.grid(True)
     for i in range(len(temp_abs_coeff)):
         plt.loglog(freqs, temp_abs_coeff[i], label=str(temp_array[i] - 273.15) + ' C', lw=0.75, alpha=0.75)
@@ -122,7 +122,7 @@ def get_spec_prop_abs_coeff_p(p_bar_array, p_ref):
             abs_coeff_db, _, _ = calc_coeff(freqs, distance, temperature, relative_humidity, p_bar, p_ref)
             p_bar_abs_coeff.append(abs_coeff_db)
     plt.xlabel(r'Frequency/Pressure $\left(\frac{Hz}{atm}\right)$')
-    plt.ylabel(r'Absorption Coefficient $\left(\frac{dB}{\_\_\_\_ m \cdot atm}\right)$')
+    plt.ylabel(r'Absorption Coefficient $\left(\frac{dB}{100m \cdot atm}\right)$')
     plt.grid(True)
     for i in range(len(p_bar_abs_coeff)):
         plt.loglog(freqs, p_bar_abs_coeff[i], label=str(p_bar_array[i]) + ' Pa', lw=0.75, alpha=0.75)
