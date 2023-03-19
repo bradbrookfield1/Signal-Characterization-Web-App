@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import librosa
 import librosa.display
-from .graphic_interfacing import get_graph
+from micCharacterization.graphic_interfacing import get_graph
 from acoustics.cepstrum import complex_cepstrum
 
 fig_size = (6, 4.5)

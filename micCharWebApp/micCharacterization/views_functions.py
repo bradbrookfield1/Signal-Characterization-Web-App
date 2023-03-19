@@ -1,16 +1,22 @@
+from django.core.files.base import File
+from temporalDatabase import graphs as temp
+from spectralDatabase import graphs as spec
+from snrDatabase import graphs as snr
+from statisticalDatabase import graphs as stat
 from .models import MicDataRecord
 from temporalDatabase.models import TemporalDatabase
 from spectralDatabase.models import SpectralDatabase
 from snrDatabase.models import SNRDatabase
 from statisticalDatabase.models import StatisticalDatabase
+import soundfile as sf
 from .preprocessing import charts_preprocess
-from . import graphs_snr_prop, graphs_temporal, graphs_spectral
+from . import graphs_propagation
 from .calculations import get_SNR_arrays, db_array_to_mean
-from .constants import distance, tunnel_dist, dist_array_lin, dist_array_log, dist_array_big
+from .constants import tunnel_dist, dist_array_lin, dist_array_log, dist_array_big
 from .constants import p_bar_array, p_ref, window
 from matplotlib import pyplot as plt
-from librosa import A_weighting, C_weighting
-import copy
+from librosa import A_weighting, C_weighting, stft, istft, decompose
+import copy, os, wave
 
 def help_get_context():
     file_set_list = MicDataRecord.get_fileset()
@@ -22,14 +28,40 @@ def help_get_context():
 
 def spec_prop_abs_coeff_graphs():
     plt.switch_backend('AGG')
-    return [graphs_snr_prop.prop_snr_pred_dist(dist_array_lin),
-            graphs_snr_prop.get_avg_snr_vs_dist(dist_array_big),
-            graphs_snr_prop.get_spec_prop_abs_coeff_hum(),
-            graphs_snr_prop.get_spec_prop_abs_coeff_temp(),
-            graphs_snr_prop.get_spec_prop_abs_coeff_dist(dist_array_lin),
-            graphs_snr_prop.get_spec_prop_abs_coeff_dist(dist_array_log),
-            graphs_snr_prop.get_spec_prop_abs_coeff_p(p_bar_array, p_ref),
-            graphs_snr_prop.get_spec_prop_abs_coeff_p(p_bar_array, p_bar_array)]
+    return [graphs_propagation.prop_snr_pred_dist(dist_array_lin),
+            snr.get_avg_snr_vs_dist(dist_array_big),
+            graphs_propagation.get_spec_prop_abs_coeff_hum(),
+            graphs_propagation.get_spec_prop_abs_coeff_temp(),
+            graphs_propagation.get_spec_prop_abs_coeff_dist(dist_array_lin),
+            graphs_propagation.get_spec_prop_abs_coeff_dist(dist_array_log),
+            graphs_propagation.get_spec_prop_abs_coeff_p(p_bar_array, p_ref),
+            graphs_propagation.get_spec_prop_abs_coeff_p(p_bar_array, p_bar_array)]
+
+def get_hpss_audio(lib_sig):
+    lib_sig_fft = stft(lib_sig)
+    harm, perc = decompose.hpss(lib_sig_fft)
+    harm_sig = istft(harm)
+    perc_sig = istft(perc)
+    return harm_sig, perc_sig
+
+def save_hpss_files(obj, file_paths, file_names):
+    file_fields_short = ['noisy_Signal', 'measured_Signal', 'noise', 'true_Signal']
+    sound_list = charts_preprocess(file_paths)
+    for typ, sound, nam in zip(file_fields_short, sound_list, file_names):
+        if sound:
+            harm, perc = get_hpss_audio(sound[0][1])
+            sf.write('./Uploads/Recordings/Temp/Harmonics/' + nam, harm, sound[0][0])
+            sf.write('./Uploads/Recordings/Temp/Percussives/' + nam, perc, sound[0][0])
+            
+            with open('./Uploads/Recordings/Temp/Harmonics/' + nam, 'rb') as f:
+                exec('obj.' + typ + '_Harmonics.save(nam, File(f))')
+            with open('./Uploads/Recordings/Temp/Percussives/' + nam, 'rb') as f:
+                exec('obj.' + typ + '_Percussives.save(nam, File(f))')
+
+            if os.path.exists('./Uploads/Recordings/Temp/Harmonics/' + nam):
+                os.remove('./Uploads/Recordings/Temp/Harmonics/' + nam)
+            if os.path.exists('./Uploads/Recordings/Temp/Percussives/' + nam):
+                os.remove('./Uploads/Recordings/Temp/Percussives/' + nam)
 
 def list_intro(db_type):
     file_set_list, name_list, records = help_get_context()
@@ -54,18 +86,19 @@ def list_intro(db_type):
     return norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db
 
 def detail_intro(context, mic_Data_Record):
-    # context['signal_File'] = mic_Data_Record.filename()
-    # context['reference_File'] = mic_Data_Record.filename()
-    # start_dur_list = mic_Data_Record.get_start_dur()
     record_DB_dict = mic_Data_Record.__dict__
     record_DB_dict_fixed = copy.deepcopy(record_DB_dict)
     del record_DB_dict_fixed['record_Name'], record_DB_dict_fixed['description'], record_DB_dict_fixed['prediction_Harmonics']
+    del record_DB_dict_fixed['noisy_Signal_Harmonics'], record_DB_dict_fixed['measured_Signal_Harmonics']
+    del record_DB_dict_fixed['noise_Harmonics'], record_DB_dict_fixed['true_Signal_Harmonics']
+    del record_DB_dict_fixed['noisy_Signal_Percussives'], record_DB_dict_fixed['measured_Signal_Percussives']
+    del record_DB_dict_fixed['noise_Percussives'], record_DB_dict_fixed['true_Signal_Percussives']
     del record_DB_dict_fixed['_state'], record_DB_dict_fixed['id']
     file_list = []
     for attr, value in record_DB_dict_fixed.items():
         if mic_Data_Record.filename(attr):
             context[attr] = mic_Data_Record.filename(attr)
-            file_list.append('./Uploads/Recordings/' + attr + '/' + context[attr])
+            file_list.append('./Uploads/Recordings/Original/' + attr + '/' + context[attr])
         else:
             context[attr] = None
             file_list.append(None)
@@ -117,43 +150,43 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
         plot_me = true_sig
     match graph_type:
         case 'signal_Graph':
-            context[graph_type] = graphs_temporal.get_signal(plot_me[0], plot_me[1], name, mic_Data_Record)
+            context[graph_type] = temp.get_signal(plot_me[0], plot_me[1], name, mic_Data_Record)
         case 'cepstrum_Graph':
-            context[graph_type] = graphs_temporal.get_cepstrum(plot_me[0], plot_me[1], name, mic_Data_Record)
+            context[graph_type] = temp.get_cepstrum(plot_me[0], plot_me[1], name, mic_Data_Record)
         case 'hilbert_Phase_Graph':
-            context[graph_type] = graphs_temporal.get_inst_phase(plot_me[0], plot_me[1], name, mic_Data_Record)
+            context[graph_type] = temp.get_inst_phase(plot_me[0], plot_me[1], name, mic_Data_Record)
         case 'onset_Strength_Graph':
-            context[graph_type] = graphs_temporal.get_onset_strength(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = temp.get_onset_strength(plot_me[0], name, mic_Data_Record)
         case 'lag_Autocorrelation_Graph':
-            context[graph_type] = graphs_temporal.get_lag_autocorrelation(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = temp.get_lag_autocorrelation(plot_me[0], name, mic_Data_Record)
         case 'BPM_Autocorrelation_Graph':
-            context[graph_type] = graphs_temporal.get_bpm_autocorrelation(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = temp.get_bpm_autocorrelation(plot_me[0], name, mic_Data_Record)
         case 'autocorrelation_Tempogram':
-            context[graph_type] = graphs_temporal.get_autocorr_tempogram(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = temp.get_autocorr_tempogram(plot_me[0], name, mic_Data_Record)
         case 'fourier_Tempogram':
-            context[graph_type] = graphs_temporal.get_fourier_tempogram(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = temp.get_fourier_tempogram(plot_me[0], name, mic_Data_Record)
         case 'average_PSD_Graph':
-            context[graph_type] = graphs_spectral.get_PSD(plot_me[2], name, mic_Data_Record)
+            context[graph_type] = spec.get_PSD(plot_me[2], name, mic_Data_Record)
         case 'phase_Spectrum_Graph':
-            context[graph_type] = graphs_spectral.get_phase_spectrum(plot_me[1], name, mic_Data_Record)
+            context[graph_type] = spec.get_phase_spectrum(plot_me[1], name, mic_Data_Record)
         case 'pure_Signal_SNR_Graph':
             if norm_sig and norm_noise:
-                context[graph_type] = graphs_snr_prop.get_SNR(norm_sig[2], norm_noise[2], 'Given Signal and Noise', graph_type, name, mic_Data_Record)
+                context[graph_type] = snr.get_SNR(norm_sig[2], norm_noise[2], 'Given Signal and Noise', graph_type, name, mic_Data_Record)
             else:
                 context[graph_type] = None
         case 'system_Signal_SNR_Graph':
             if true_sig and norm_noisy_sig:
-                context[graph_type] = graphs_snr_prop.get_SNR(true_sig[2], norm_noisy_sig[2], 'System Approach', graph_type, name, mic_Data_Record)
+                context[graph_type] = snr.get_SNR(true_sig[2], norm_noisy_sig[2], 'System Approach', graph_type, name, mic_Data_Record)
             else:
                 context[graph_type] = None
         case 'given_Signal_SNR_Graph':
             if norm_sig and norm_noisy_sig:
-                context[graph_type] = graphs_snr_prop.get_SNR(norm_sig[2], norm_noisy_sig[2], 'Given Signal', graph_type, name, mic_Data_Record)
+                context[graph_type] = snr.get_SNR(norm_sig[2], norm_noisy_sig[2], 'Given Signal', graph_type, name, mic_Data_Record)
             else:
                 context[graph_type] = None
         case 'given_Noise_SNR_Graph':
             if norm_noisy_sig and norm_noise:
-                context[graph_type] = graphs_snr_prop.get_SNR(norm_noisy_sig[2], norm_noise[2], 'Given Noise', graph_type, name, mic_Data_Record)
+                context[graph_type] = snr.get_SNR(norm_noisy_sig[2], norm_noise[2], 'Given Noise', graph_type, name, mic_Data_Record)
             else:
                 context[graph_type] = None
         case 'average_SNR_Distance_Graph':
@@ -174,15 +207,20 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 a_weight = A_weighting(weight_freqs)[(window - 1):(-window + 1)]
                 c_weight = C_weighting(weight_freqs)[(window - 1):(-window + 1)]
                 db_rolled_avg = db_array_to_mean(db_rolled_both - c_weight + a_weight)
-                context[graph_type] = graphs_snr_prop.get_avg_snr_vs_dist(dist_array_big, name, mic_Data_Record, db_rolled_avg, tunnel_dist)
+                context[graph_type] = snr.get_avg_snr_vs_dist(dist_array_big, name, mic_Data_Record, db_rolled_avg, tunnel_dist)
         case 'spectrogram':
-            context[graph_type] = graphs_spectral.get_spectrogram(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = spec.get_spectrogram(plot_me[0], name, mic_Data_Record)
         case 'mellin_Spectrogram':
-            context[graph_type] = graphs_spectral.get_mellin(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = spec.get_mellin(plot_me[0], name, mic_Data_Record)
         case 'percussive_Spectrogram':
-            context[graph_type] = graphs_spectral.get_percussive(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = spec.get_percussive(plot_me[0], name, mic_Data_Record)
         case 'harmonic_Spectrogram':
-            context[graph_type] = graphs_spectral.get_harmonic(plot_me[0], name, mic_Data_Record)
+            context[graph_type] = spec.get_harmonic(plot_me[0], name, mic_Data_Record)
         case 'harmonic_Prediction_Graph':
-            context[graph_type] = graphs_spectral.get_harmonic_prediction(plot_me[0], mic_Data_Record.prediction_Harmonics, name, mic_Data_Record)
+            context[graph_type] = spec.get_harmonic_prediction(plot_me[0], mic_Data_Record.prediction_Harmonics, name, mic_Data_Record)
+        case 'overlapping_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                context[graph_type] = stat.get_overlapping_PDFs(plot_me[0], name, mic_Data_Record)
+            else:
+                context[graph_type] = None
     return context

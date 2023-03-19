@@ -65,3 +65,42 @@ class StatisticalRefreshedDetailView(generic.DetailView):
         context['type'] = 'stat:detail-refreshed'
         context['object'] = mic_Data_Record
         return context
+    
+class OverlappingPDFListView(generic.ListView):
+    model = MicDataRecord
+    template_name = 'statisticalDatabase/list_with_sidebar.html'
+    
+    def get_context_data(self):
+        context = dict()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Statistical')
+        path_list = db_list.values_list('overlapping_PDF_Graph', flat=True)
+        good_graph_list = []
+        for path, norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(path_list, norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
+            if path == None:
+                context = find_graph('overlapping_PDF_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
+                db.overlapping_PDF_Graph = context['overlapping_PDF_Graph']
+                db.save()
+                good_graph_list.append(file_path_to_img(context['overlapping_PDF_Graph']))
+            else:
+                good_graph_list.append(file_path_to_img(path))
+        context['graphs'] = good_graph_list
+        context['type'] = 'stat:overlapping-PDFs-list-refreshed'
+        return context
+
+class OverlappingPDFRefreshedListView(generic.ListView):
+    model = MicDataRecord
+    template_name = 'statisticalDatabase/list_with_sidebar.html'
+    
+    def get_context_data(self):
+        context = dict()
+        norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, records, db_list = list_intro('Statistical')
+        path_list = db_list.values_list('overlapping_PDF_Graph', flat=True)
+        good_graph_list = []
+        for norm_noisy_sig, norm_sig, norm_noise, true_sig, name, db, rec in zip(norm_noisy_sig_list, norm_sig_list, norm_noise_list, true_sig_list, name_list, db_list, records):
+            context = find_graph('overlapping_PDF_Graph', context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, rec)
+            db.overlapping_PDF_Graph = context['overlapping_PDF_Graph']
+            db.save()
+            good_graph_list.append(file_path_to_img(context['overlapping_PDF_Graph']))
+        context['graphs'] = good_graph_list
+        context['type'] = 'stat:overlapping-PDFs-list-refreshed'
+        return context

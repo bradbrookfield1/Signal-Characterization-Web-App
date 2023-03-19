@@ -1,12 +1,12 @@
 import math
 from matplotlib import pyplot as plt
-from scipy import signal, interpolate
+from scipy import signal
 import numpy as np
 import pandas as pd
 import librosa
 import librosa.display
-from .graphic_interfacing import get_graph
-from .calculations import fft_vectorized
+from micCharacterization.graphic_interfacing import get_graph
+from micCharacterization.calculations import fft_vectorized
 
 fig_size = (6, 4.5)
 
@@ -74,7 +74,7 @@ def get_mellin(lib_list, name, mic_Data_Record):
 def get_percussive(lib_list, name, mic_Data_Record):
     spec_fft_data = librosa.stft(lib_list[1])
     harm, perc = librosa.decompose.hpss(spec_fft_data)
-    perc_play = librosa.istft(perc)
+    # perc_play = librosa.istft(perc)
     perc_db_data = librosa.amplitude_to_db(np.abs(perc), ref=np.max(np.abs(spec_fft_data)))
     plt.figure(1, figsize=fig_size).clf()
     librosa.display.specshow(

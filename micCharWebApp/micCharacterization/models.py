@@ -51,10 +51,22 @@ class MicDataRecord(models.Model):
     record_Name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000, blank=True)
     prediction_Harmonics = models.IntegerField(blank=True, null=True)
-    noisy_Signal_File = models.FileField(upload_to='Recordings/noisy_Signal_File/', blank=True, null=True)
-    measured_Signal_File = models.FileField(upload_to='Recordings/measured_Signal_File/', blank=True, null=True)
-    noise_File = models.FileField(upload_to='Recordings/noise_File/', blank=True, null=True)
-    true_Signal_File = models.FileField(upload_to='Recordings/true_Signal_File/', blank=True, null=True)
+    
+    noisy_Signal_File = models.FileField(upload_to='Recordings/Original/noisy_Signal_File/', blank=True, null=True)
+    noisy_Signal_Harmonics = models.FileField(upload_to='Recordings/Harmonics/noisy_Signal_File/', blank=True, null=True)
+    noisy_Signal_Percussives = models.FileField(upload_to='Recordings/Percussives/noisy_Signal_File/', blank=True, null=True)
+    
+    measured_Signal_File = models.FileField(upload_to='Recordings/Original/measured_Signal_File/', blank=True, null=True)
+    measured_Signal_Harmonics = models.FileField(upload_to='Recordings/Harmonics/measured_Signal_File/', blank=True, null=True)
+    measured_Signal_Percussives = models.FileField(upload_to='Recordings/Percussives/measured_Signal_File/', blank=True, null=True)
+    
+    noise_File = models.FileField(upload_to='Recordings/Original/noise_File/', blank=True, null=True)
+    noise_Harmonics = models.FileField(upload_to='Recordings/Harmonics/noise_File/', blank=True, null=True)
+    noise_Percussives = models.FileField(upload_to='Recordings/Percussives/noise_File/', blank=True, null=True)
+    
+    true_Signal_File = models.FileField(upload_to='Recordings/Original/true_Signal_File/', blank=True, null=True)
+    true_Signal_Harmonics = models.FileField(upload_to='Recordings/Harmonics/true_Signal_File/', blank=True, null=True)
+    true_Signal_Percussives = models.FileField(upload_to='Recordings/Percussives/true_Signal_File/', blank=True, null=True)
     
     class Meta:
         ordering = ('pk',)
@@ -63,7 +75,7 @@ class MicDataRecord(models.Model):
         return self.record_Name
     
     def get_absolute_url(self):
-        return reverse('mic-data-record-detail', kwargs={'pk': self.pk})
+        return reverse('mic-characterization:mic-data-record-detail', kwargs={'pk': self.pk})
     
     def get_all_records():
         return MicDataRecord.objects.all()

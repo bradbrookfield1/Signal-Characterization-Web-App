@@ -12,7 +12,7 @@ from temporalDatabase.models import TemporalDatabase
 from spectralDatabase.models import SpectralDatabase
 from snrDatabase.models import SNRDatabase
 from statisticalDatabase.models import StatisticalDatabase
-from .views_functions import delete_intro, help_get_context, spec_prop_abs_coeff_graphs
+from .views_functions import delete_intro, help_get_context, spec_prop_abs_coeff_graphs, save_hpss_files
 import os
 
 class MicDataRecordListView(generic.ListView):
@@ -48,7 +48,18 @@ class MicDataRecordCreateView(generic.CreateView):
         return context
     
     def form_valid(self, form):
+        file_fields = ['noisy_Signal_File', 'measured_Signal_File', 'noise_File', 'true_Signal_File']
+        file_paths = []
+        file_names = []
+        for field in file_fields:
+            if form.cleaned_data[field]:
+                file_paths.append(self.request.FILES.get(field).file.name)
+                file_names.append(form.cleaned_data[field].name)
+            else:
+                file_paths.append(None)
+                file_names.append(None)
         self.object = form.save()
+        save_hpss_files(self.object, file_paths, file_names)
         temporal_Database = TemporalDatabase(mic_Data_Record=self.object, signal_Graph=None, cepstrum_Graph=None, hilbert_Phase_Graph=None, onset_Strength_Graph=None, lag_Autocorrelation_Graph=None, BPM_Autocorrelation_Graph=None, autocorrelation_Tempogram=None, fourier_Tempogram=None)
         temporal_Database.save()
         spectral_Database = SpectralDatabase(mic_Data_Record=self.object, average_PSD_Graph=None, phase_Spectrum_Graph=None, spectrogram=None, mellin_Spectrogram=None, percussive_Spectrogram=None, harmonic_Spectrogram=None, harmonic_Prediction_Graph=None)
@@ -66,6 +77,7 @@ class MicDataRecordCreateView(generic.CreateView):
 class MicDataRecordUpdateView(generic.UpdateView):
     model = MicDataRecord
     form_class = MicDataRecordForm
+    success_url = 'mic-characterization:mic-data-record-list'
 
     def get_context_data(self, **kwargs):
         context = super(MicDataRecordUpdateView, self).get_context_data(**kwargs)
@@ -73,11 +85,23 @@ class MicDataRecordUpdateView(generic.UpdateView):
         return context
 
     def form_valid(self, form):
+        file_fields = ['noisy_Signal_File', 'measured_Signal_File', 'noise_File', 'true_Signal_File']
+        file_paths = []
+        file_names = []
+        for field in file_fields:
+            if not self.request.FILES.get(field) == None:
+                file_paths.append(self.request.FILES.get(field).file.name)
+                file_names.append(form.cleaned_data[field].name)
+            else:
+                file_paths.append(None)
+                file_names.append(None)
+        save_hpss_files(self.object, file_paths, file_names)
         record_Name = form.cleaned_data['record_Name']
         log = Log(action="Updated", record_Name=record_Name, date=timezone.now())
         log.save()
         messages.success(self.request, f'Data record updated for {record_Name}!')
-        return super().form_valid(form)
+        self.object = form.save()
+        return HttpResponseRedirect(reverse(self.get_success_url()))
 
 class MicDataRecordDeleteView(generic.DeleteView):
     model = MicDataRecord

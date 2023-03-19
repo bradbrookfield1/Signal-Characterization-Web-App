@@ -1,6 +1,6 @@
 from django.views import generic
 from micCharacterization.models import MicDataRecord
-from micCharacterization.views_functions import find_graph, list_intro, help_get_context, detail_intro
+from micCharacterization.views_functions import find_graph, list_intro, help_get_context, detail_intro, get_hpss_audio
 from micCharacterization.graphic_interfacing import file_path_to_img
 from .models import SpectralDatabase
 
@@ -36,6 +36,19 @@ class SpectralDetailView(generic.DetailView):
         name = str(mic_Data_Record)
         context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, spec_DB_dict, snr_DB_dict, stat_DB_dict, temp_DB, spec_DB, snr_DB, stat_DB = detail_intro(context, mic_Data_Record)
         
+        if norm_noisy_sig:
+            context['noisy_Signal_Harmonics'] = mic_Data_Record.noisy_Signal_Harmonics
+            context['noisy_Signal_Percussives'] = mic_Data_Record.noisy_Signal_Percussives
+        if norm_sig:
+            context['measured_Signal_Harmonics'] = mic_Data_Record.measured_Signal_Harmonics
+            context['measured_Signal_Percussives'] = mic_Data_Record.measured_Signal_Percussives
+        if norm_noise:
+            context['noise_Harmonics'] = mic_Data_Record.noise_Harmonics
+            context['noise_Percussives'] = mic_Data_Record.noise_Percussives
+        if true_sig:
+            context['true_Signal_Harmonics'] = mic_Data_Record.true_Signal_Harmonics
+            context['true_Signal_Percussives'] = mic_Data_Record.true_Signal_Percussives
+        
         for attr, value in spec_DB_dict.items():
             if value == None:
                 context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
@@ -46,6 +59,7 @@ class SpectralDetailView(generic.DetailView):
         spec_DB.save()
         context['type'] = 'spectral:detail'
         context['object'] = mic_Data_Record
+        
         return context
 
 class SpectralRefreshedDetailView(generic.DetailView):
@@ -56,6 +70,19 @@ class SpectralRefreshedDetailView(generic.DetailView):
         mic_Data_Record = self.get_object().mic_Data_Record
         name = str(mic_Data_Record)
         context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, spec_DB_dict, snr_DB_dict, stat_DB_dict, temp_DB, spec_DB, snr_DB, stat_DB = detail_intro(context, mic_Data_Record)
+        
+        if norm_noisy_sig:
+            context['noisy_Signal_Harmonics'] = mic_Data_Record.noisy_Signal_Harmonics
+            context['noisy_Signal_Percussives'] = mic_Data_Record.noisy_Signal_Percussives
+        if norm_sig:
+            context['measured_Signal_Harmonics'] = mic_Data_Record.measured_Signal_Harmonics
+            context['measured_Signal_Percussives'] = mic_Data_Record.measured_Signal_Percussives
+        if norm_noise:
+            context['noise_Harmonics'] = mic_Data_Record.noise_Harmonics
+            context['noise_Percussives'] = mic_Data_Record.noise_Percussives
+        if true_sig:
+            context['true_Signal_Harmonics'] = mic_Data_Record.true_Signal_Harmonics
+            context['true_Signal_Percussives'] = mic_Data_Record.true_Signal_Percussives
         
         for attr, value in spec_DB_dict.items():
             context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)

@@ -21,26 +21,93 @@
 			Record Description: {{ object.description }}
 		</div>
 	</div><br><br>
-	<div class="row">
-		<div class="col">
-			True Signal: {{ true_Signal_File }}<br>
-			<audio id="Player" controls>
-				<source src="/Uploads/Recordings/true_Signal_File/{{ true_Signal_File }}" type="audio/wav">
-			</audio><br><br>
-			Measured Signal: {{ measured_Signal_File }}<br>
-			<audio id="Player" controls>
-				<source src="/Uploads/Recordings/measured_Signal_File/{{ measured_Signal_File }}" type="audio/wav">
-			</audio><br><br>
-			Noisy Signal: {{ noisy_Signal_File }}<br>
-			<audio id="Player" controls>
-				<source src="/Uploads/Recordings/noisy_Signal_File/{{ noisy_Signal_File }}" type="audio/wav">
-			</audio><br><br>
-			Measured Noise: {{ noise_File }}<br>
-			<audio id="Player" controls>
-				<source src="/Uploads/Recordings/noise_File/{{ noise_File }}" type="audio/wav">
-			</audio><br><br>
+	<h2>
+		Playback
+	</h2>
+	{% if true_Signal_File %}
+		<h6>
+			True Signal
+		</h6>
+		<div class="row">
+			<div class="col">
+				Recording:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/Recordings/Original/true_Signal_File/{{ true_Signal_File }}" type="audio/wav">
+				</audio><br><br>
+				Harmonics:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ true_Signal_Harmonics }}" type="audio/wav">
+				</audio><br><br>
+				Percussives:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ true_Signal_Percussives }}" type="audio/wav">
+				</audio><br><br>
+			</div>
 		</div>
-	</div>
+	{% endif %}
+	{% if measured_Signal_File %}
+		<h6>
+			Measured Plain Signal
+		</h6>
+		<div class="row">
+			<div class="col">
+				Recording:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/Recordings/Original/measured_Signal_File/{{ measured_Signal_File }}" type="audio/wav">
+				</audio><br><br>
+				Harmonics:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ measured_Signal_Harmonics }}" type="audio/wav">
+				</audio><br><br>
+				Percussives:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ measured_Signal_Percussives }}" type="audio/wav">
+				</audio><br><br>
+			</div>
+		</div>
+	{% endif %}
+	{% if noisy_Signal_File %}
+		<h6>
+			Measured Noisy Signal
+		</h6>
+		<div class="row">
+			<div class="col">
+				Recording:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/Recordings/Original/noisy_Signal_File/{{ noisy_Signal_File }}" type="audio/wav">
+				</audio><br><br>
+				Harmonics:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ noisy_Signal_Harmonics }}" type="audio/wav">
+				</audio><br><br>
+				Percussives:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ noisy_Signal_Percussives }}" type="audio/wav">
+				</audio><br><br>
+			</div>
+		</div>
+	{% endif %}
+	{% if noise_File %}
+		<h6>
+			Measured Noise
+		</h6>
+		<div class="row">
+			<div class="col">
+				Recording:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/Recordings/Original/noise_File/{{ noise_File }}" type="audio/wav">
+				</audio><br><br>
+				Harmonics:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ noise_Harmonics }}" type="audio/wav">
+				</audio><br><br>
+				Percussives:<br>
+				<audio id="Player" controls>
+					<source src="/Uploads/{{ noise_Percussives }}" type="audio/wav">
+				</audio><br><br>
+			</div>
+		</div>
+	{% endif %}
 	<div class="row">
 		<a href="{% url 'mic-characterization:mic-data-record-update' pk=spectraldatabase.pk %}">
 			<button class="btn btn-primary">

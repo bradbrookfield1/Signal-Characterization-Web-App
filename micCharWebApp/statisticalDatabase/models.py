@@ -35,6 +35,7 @@ def delete_files_when_file_changed(sender, instance, **kwargs):
 
 class StatisticalDatabase(models.Model):
     mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
+    overlapping_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     
     def get_absolute_url(self):
         return reverse('detail', kwargs={'pk': self.pk})
