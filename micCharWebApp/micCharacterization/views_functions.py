@@ -9,13 +9,16 @@ from spectralDatabase.models import SpectralDatabase
 from snrDatabase.models import SNRDatabase
 from statisticalDatabase.models import StatisticalDatabase
 import soundfile as sf
-from .preprocessing import charts_preprocess
+import pandas as pd
+import numpy as np
+from .preprocessing import charts_preprocess, apply_norm
 from . import graphs_propagation
 from .calculations import get_SNR_arrays, db_array_to_mean
 from .constants import tunnel_dist, dist_array_lin, dist_array_log, dist_array_big
 from .constants import p_bar_array, p_ref, window
 from matplotlib import pyplot as plt
-from librosa import A_weighting, C_weighting, stft, istft, decompose
+from scipy import signal
+from librosa import A_weighting, C_weighting, stft, istft, decompose, onset
 import copy, os, wave
 
 def help_get_context():
@@ -139,7 +142,8 @@ def delete_intro(mic_Data_Record):
     del stat_DB_dict_fixed['_state'], stat_DB_dict_fixed['id'], stat_DB_dict_fixed['mic_Data_Record_id']
     return temp_DB_dict_fixed, spec_DB_dict_fixed, snr_DB_dict_fixed, stat_DB_dict_fixed
 
-def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record=None):
+def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record=None, hpss_array=None):
+    stat_norm = True
     if norm_noisy_sig:
         plot_me = norm_noisy_sig
     elif norm_sig:
@@ -170,25 +174,13 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
         case 'phase_Spectrum_Graph':
             context[graph_type] = spec.get_phase_spectrum(plot_me[1], name, mic_Data_Record)
         case 'pure_Signal_SNR_Graph':
-            if norm_sig and norm_noise:
-                context[graph_type] = snr.get_SNR(norm_sig[2], norm_noise[2], 'Given Signal and Noise', graph_type, name, mic_Data_Record)
-            else:
-                context[graph_type] = None
+            context[graph_type] = snr.get_SNR(norm_sig[2], norm_noise[2], 'Given Signal and Noise', graph_type, name, mic_Data_Record) if norm_sig and norm_noise else None
         case 'system_Signal_SNR_Graph':
-            if true_sig and norm_noisy_sig:
-                context[graph_type] = snr.get_SNR(true_sig[2], norm_noisy_sig[2], 'System Approach', graph_type, name, mic_Data_Record)
-            else:
-                context[graph_type] = None
+            context[graph_type] = snr.get_SNR(true_sig[2], norm_noisy_sig[2], 'System Approach', graph_type, name, mic_Data_Record) if true_sig and norm_noisy_sig else None
         case 'given_Signal_SNR_Graph':
-            if norm_sig and norm_noisy_sig:
-                context[graph_type] = snr.get_SNR(norm_sig[2], norm_noisy_sig[2], 'Given Signal', graph_type, name, mic_Data_Record)
-            else:
-                context[graph_type] = None
+            context[graph_type] = snr.get_SNR(norm_sig[2], norm_noisy_sig[2], 'Given Signal', graph_type, name, mic_Data_Record) if norm_sig and norm_noisy_sig else None
         case 'given_Noise_SNR_Graph':
-            if norm_noisy_sig and norm_noise:
-                context[graph_type] = snr.get_SNR(norm_noisy_sig[2], norm_noise[2], 'Given Noise', graph_type, name, mic_Data_Record)
-            else:
-                context[graph_type] = None
+            context[graph_type] = snr.get_SNR(norm_noisy_sig[2], norm_noise[2], 'Given Noise', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
         case 'average_SNR_Distance_Graph':
             db_rolled_both = []
             if norm_sig and norm_noise:
@@ -218,9 +210,68 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
             context[graph_type] = spec.get_harmonic(plot_me[0], name, mic_Data_Record)
         case 'harmonic_Prediction_Graph':
             context[graph_type] = spec.get_harmonic_prediction(plot_me[0], mic_Data_Record.prediction_Harmonics, name, mic_Data_Record)
-        case 'overlapping_PDF_Graph':
-            if norm_noisy_sig and norm_noise:
-                context[graph_type] = stat.get_overlapping_PDFs(plot_me[0], name, mic_Data_Record)
-            else:
-                context[graph_type] = None
+        case 'original_PDF_Graph':
+            ns = [norm_noisy_sig[0][0], apply_norm(norm_noisy_sig[0][1])] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], apply_norm(norm_noise[0][1])] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_original_PDFs(ns, n, 'Original', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'harmonic_HPSS_PDF_Graph':
+            ns = [norm_noisy_sig[0][0], apply_norm(norm_noisy_sig[0][1])] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], apply_norm(norm_noise[0][1])] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_original_PDFs(ns, n, 'Harmonic HPSS', graph_type, name, mic_Data_Record, hpss_array, stat_norm) if norm_noisy_sig and norm_noise and hpss_array else None
+        case 'percussive_HPSS_PDF_Graph':
+            ns = [norm_noisy_sig[0][0], apply_norm(norm_noisy_sig[0][1])] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], apply_norm(norm_noise[0][1])] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_original_PDFs(ns, n, 'Percussive HPSS', graph_type, name, mic_Data_Record, hpss_array, stat_norm) if norm_noisy_sig and norm_noise and hpss_array else None
+        case 'welch_PDF_Graph':
+            ns = [norm_noisy_sig[0][0], apply_norm(norm_noisy_sig[0][1])] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], apply_norm(norm_noise[0][1])] if stat_norm == True else norm_noise[0]
+            noisy_sig_welch = [ns[0], pd.Series(signal.welch(ns[1], fs=ns[0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()]
+            noise_welch = [n[0], pd.Series(signal.welch(n[1], fs=n[0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()]
+            context[graph_type] = stat.get_original_PDFs(noisy_sig_welch, noise_welch, 'Welch', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'magnitude_FFT_Spectrum_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Magnitude FFT Spectrum', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'magnitude_FFT_Time_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Magnitude FFT Time', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'phase_FFT_Spectrum_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Phase FFT Spectrum', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'phase_FFT_Time_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Phase FFT Time', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'magnitude_FMT_Spectrum_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Magnitude Mellin Spectrum', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'magnitude_FMT_Time_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Magnitude Mellin Time', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'phase_FMT_Spectrum_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Phase Mellin Spectrum', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'phase_FMT_Time_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_fft_PDFs(ns, n, 'Phase Mellin Time', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'hilbert_PDF_Graph':
+            context[graph_type] = stat.get_Signal_PDFs([norm_noisy_sig[0][0], norm_noisy_sig[1]], [norm_noise[0][0], norm_noise[1]], 'Hilbert Transform', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'onset_Strength_PDF_Graph':
+            ns = [norm_noisy_sig[0][0], np.float32(apply_norm(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], np.float32(apply_norm(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+            ns_os = onset.onset_strength(y=ns[1], sr=ns[0])
+            norm_ns_os = ns_os/(ns_os.max())
+            n_os = onset.onset_strength(y=n[1], sr=n[0])
+            norm_n_os = n_os/(n_os.max())
+            context[graph_type] = stat.get_original_PDFs(norm_ns_os, norm_n_os, 'Onset Strength', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+        case 'inst_Phase_PDF_Graph':
+            ns = [norm_noisy_sig[0][0], apply_norm(norm_noisy_sig[0][1])] if stat_norm == True else norm_noisy_sig[0]
+            n = [norm_noise[0][0], apply_norm(norm_noise[0][1])] if stat_norm == True else norm_noise[0]
+            context[graph_type] = stat.get_Signal_PDFs(ns, n, 'Instantaneous Phase', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
     return context

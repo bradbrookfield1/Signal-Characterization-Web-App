@@ -10,7 +10,7 @@ vel_array = [0, 18, 0]
 
 window = 13
 # freqs = np.linspace(1, 1000000, 100000)                                   # Hz
-freqs = np.logspace(1, 6, 100000)                                   # Hz
+freqs = np.logspace(1, 5, 100000)                                   # Hz
 p_bar = 101425                                                      # Pascals
 p_ref = 101325                                                      # Pascals
 relative_humidity = 0.5                                             # Decimal

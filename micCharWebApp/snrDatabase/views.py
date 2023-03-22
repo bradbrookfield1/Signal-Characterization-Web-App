@@ -41,6 +41,19 @@ class SNRDetailView(generic.DetailView):
         name = str(mic_Data_Record)
         context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, spec_DB_dict, snr_DB_dict, stat_DB_dict, temp_DB, spec_DB, snr_DB, stat_DB = detail_intro(context, mic_Data_Record)
         
+        if norm_noisy_sig:
+            context['noisy_Signal_Harmonics'] = mic_Data_Record.noisy_Signal_Harmonics
+            context['noisy_Signal_Percussives'] = mic_Data_Record.noisy_Signal_Percussives
+        if norm_sig:
+            context['measured_Signal_Harmonics'] = mic_Data_Record.measured_Signal_Harmonics
+            context['measured_Signal_Percussives'] = mic_Data_Record.measured_Signal_Percussives
+        if norm_noise:
+            context['noise_Harmonics'] = mic_Data_Record.noise_Harmonics
+            context['noise_Percussives'] = mic_Data_Record.noise_Percussives
+        if true_sig:
+            context['true_Signal_Harmonics'] = mic_Data_Record.true_Signal_Harmonics
+            context['true_Signal_Percussives'] = mic_Data_Record.true_Signal_Percussives
+        
         for attr, value in snr_DB_dict.items():
             if value == None:
                 if attr == 'pure_Signal_SNR_Graph':
@@ -83,6 +96,19 @@ class SNRRefreshedDetailView(generic.DetailView):
         mic_Data_Record = self.get_object().mic_Data_Record
         name = str(mic_Data_Record)
         context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, spec_DB_dict, snr_DB_dict, stat_DB_dict, temp_DB, spec_DB, snr_DB, stat_DB = detail_intro(context, mic_Data_Record)
+        
+        if norm_noisy_sig:
+            context['noisy_Signal_Harmonics'] = mic_Data_Record.noisy_Signal_Harmonics
+            context['noisy_Signal_Percussives'] = mic_Data_Record.noisy_Signal_Percussives
+        if norm_sig:
+            context['measured_Signal_Harmonics'] = mic_Data_Record.measured_Signal_Harmonics
+            context['measured_Signal_Percussives'] = mic_Data_Record.measured_Signal_Percussives
+        if norm_noise:
+            context['noise_Harmonics'] = mic_Data_Record.noise_Harmonics
+            context['noise_Percussives'] = mic_Data_Record.noise_Percussives
+        if true_sig:
+            context['true_Signal_Harmonics'] = mic_Data_Record.true_Signal_Harmonics
+            context['true_Signal_Percussives'] = mic_Data_Record.true_Signal_Percussives
         
         for attr, value in snr_DB_dict.items():
             if attr == 'pure_Signal_SNR_Graph':

@@ -91,10 +91,14 @@ class MicDataRecord(models.Model):
             record_DB_dict = record.__dict__
             record_DB_dict_fixed = copy.deepcopy(record_DB_dict)
             del record_DB_dict_fixed['record_Name'], record_DB_dict_fixed['description'], record_DB_dict_fixed['prediction_Harmonics']
+            del record_DB_dict_fixed['noisy_Signal_Harmonics'], record_DB_dict_fixed['measured_Signal_Harmonics']
+            del record_DB_dict_fixed['noise_Harmonics'], record_DB_dict_fixed['true_Signal_Harmonics']
+            del record_DB_dict_fixed['noisy_Signal_Percussives'], record_DB_dict_fixed['measured_Signal_Percussives']
+            del record_DB_dict_fixed['noise_Percussives'], record_DB_dict_fixed['true_Signal_Percussives']
             del record_DB_dict_fixed['_state'], record_DB_dict_fixed['id']
             for attr, value in record_DB_dict_fixed.items():
                 if record.filename(attr):
-                    file_name_list.append('./Uploads/Recordings/' + attr + '/' + str(record.filename(attr)))
+                    file_name_list.append('./Uploads/Recordings/Original/' + attr + '/' + str(record.filename(attr)))
                 else:
                     file_name_list.append(None)
             file_set.append(file_name_list)

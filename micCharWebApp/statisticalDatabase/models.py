@@ -35,7 +35,21 @@ def delete_files_when_file_changed(sender, instance, **kwargs):
 
 class StatisticalDatabase(models.Model):
     mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
-    overlapping_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    original_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    harmonic_HPSS_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    percussive_HPSS_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    welch_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    magnitude_FFT_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
+    magnitude_FFT_Time_Graph = models.CharField(max_length=1000, default=None, null=True)
+    phase_FFT_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
+    phase_FFT_Time_Graph = models.CharField(max_length=1000, default=None, null=True)
+    magnitude_FMT_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
+    magnitude_FMT_Time_Graph = models.CharField(max_length=1000, default=None, null=True)
+    phase_FMT_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
+    phase_FMT_Time_Graph = models.CharField(max_length=1000, default=None, null=True)
+    hilbert_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    onset_Strength_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    inst_Phase_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     
     def get_absolute_url(self):
         return reverse('detail', kwargs={'pk': self.pk})

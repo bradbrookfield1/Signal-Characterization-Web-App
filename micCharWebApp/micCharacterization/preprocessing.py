@@ -38,6 +38,9 @@ def load_file(wav_name):
         lib_snr_list = [lib_snr_samplerate, lib_snr_data]
         return lib_list, sig, lib_snr_list
 
+def apply_norm(sig):
+    return np.int16((sig/np.max(np.abs(sig))) * 32767)
+
 def charts_preprocess(file_list=None):
     plt.switch_backend('AGG')
     # file_list --> [noisy_sig, sig, noise, true_sig]
