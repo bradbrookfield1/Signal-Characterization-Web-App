@@ -13,6 +13,7 @@ class StatisticalListView(generic.ListView):
         context = super(StatisticalListView, self).get_context_data(**kwargs)
         file_set_list, name_list, records = help_get_context()
         file_list = []
+        has_items_list = []
         for rec in records:
             if rec.noisy_Signal_File:
                 file = rec.noisy_Signal_File
@@ -23,6 +24,9 @@ class StatisticalListView(generic.ListView):
             else:
                 file = rec.true_Signal_File
             file_list.append(file)
+            has_items = False if not (rec.noisy_Signal_File and rec.noise_File) else True
+            has_items_list.append(has_items)
+        context['good_list'] = zip(context['object_list'], has_items_list)
         context['file_list'] = file_list
         context['length'] = [i for i in range(len(file_list))]
         context['records'] = records

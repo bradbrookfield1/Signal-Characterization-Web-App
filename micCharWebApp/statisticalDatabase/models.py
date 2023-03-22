@@ -50,6 +50,7 @@ class StatisticalDatabase(models.Model):
     hilbert_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     onset_Strength_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     inst_Phase_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    signal_Inversion_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     
     def get_absolute_url(self):
         return reverse('detail', kwargs={'pk': self.pk})

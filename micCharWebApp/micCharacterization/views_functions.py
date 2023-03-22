@@ -319,4 +319,11 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = stat.get_Signal_PDFs(ns, n, 'Instantaneous Phase', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
             else:
                 context[graph_type] = None
+        case 'signal_Inversion_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                ns = [norm_noisy_sig[0][0], apply_norm(np.abs(norm_noisy_sig[0][1]))] if stat_norm == True else norm_noisy_sig[0]
+                n = [norm_noise[0][0], apply_norm(np.abs(norm_noise[0][1]))] if stat_norm == True else norm_noise[0]
+                context[graph_type] = stat.get_original_PDFs(ns, n, 'Inverted Signal', graph_type, name, mic_Data_Record) if norm_noisy_sig and norm_noise else None
+            else:
+                context[graph_type] = None
     return context

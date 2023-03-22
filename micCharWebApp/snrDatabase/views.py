@@ -23,7 +23,6 @@ class SNRListView(generic.ListView):
             else:
                 file = rec.true_Signal_File
             file_list.append(file)
-            db = SNRDatabase.objects.filter(mic_Data_Record=rec).get()
             has_items = False if not (rec.measured_Signal_File and rec.noise_File or rec.noisy_Signal_File and rec.measured_Signal_File or rec.noisy_Signal_File and rec.noise_File or rec.noisy_Signal_File and rec.true_Signal_File) else True
             has_items_list.append(has_items)
         context['good_list'] = zip(context['object_list'], has_items_list)
