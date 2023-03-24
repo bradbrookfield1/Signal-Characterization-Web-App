@@ -38,6 +38,7 @@ def get_phase_spectrum(sig, name, mic_Data_Record):
 def get_spectrogram(lib_list, name, mic_Data_Record):
     ps_fft_data = librosa.stft(lib_list[1])
     ps_fft_db_data = librosa.amplitude_to_db(np.abs(ps_fft_data), ref=np.max)
+    # ps_fft_db_data[~np.isfinite(ps_fft_db_data)] = -100
     plt.figure(1, figsize=fig_size).clf()
     librosa.display.specshow(
         ps_fft_db_data,
@@ -56,6 +57,7 @@ def get_spectrogram(lib_list, name, mic_Data_Record):
 def get_mellin(lib_list, name, mic_Data_Record):
     mel_spec = librosa.feature.melspectrogram(y=lib_list[1], sr=lib_list[0])
     mel_spec_dB = librosa.power_to_db(mel_spec, ref=np.max)
+    # mel_spec_dB[~np.isfinite(mel_spec_dB)] = -100
     plt.figure(1, figsize=fig_size).clf()
     librosa.display.specshow(
         mel_spec_dB,
@@ -76,6 +78,7 @@ def get_percussive(lib_list, name, mic_Data_Record):
     harm, perc = librosa.decompose.hpss(spec_fft_data)
     # perc_play = librosa.istft(perc)
     perc_db_data = librosa.amplitude_to_db(np.abs(perc), ref=np.max(np.abs(spec_fft_data)))
+    # perc_db_data[~np.isfinite(perc_db_data)] = -100
     plt.figure(1, figsize=fig_size).clf()
     librosa.display.specshow(
         perc_db_data,
@@ -95,6 +98,7 @@ def get_harmonic(lib_list, name, mic_Data_Record):
     spec_fft_data = librosa.stft(lib_list[1])
     harm, perc = librosa.decompose.hpss(spec_fft_data)
     harm_db_data = librosa.amplitude_to_db(np.abs(harm), ref=np.max(np.abs(spec_fft_data)))
+    # harm_db_data[~np.isfinite(harm_db_data)] = -100
     plt.figure(1, figsize=fig_size).clf()
     librosa.display.specshow(
         harm_db_data,

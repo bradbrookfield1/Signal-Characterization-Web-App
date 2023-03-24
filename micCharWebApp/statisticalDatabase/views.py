@@ -3,7 +3,6 @@ from micCharacterization.models import MicDataRecord
 from micCharacterization.views_functions import find_graph, list_intro, help_get_context, detail_intro
 from micCharacterization.graphic_interfacing import file_path_to_img
 from .models import StatisticalDatabase
-from .graphs import assign_hpss_arrays
 
 class StatisticalListView(generic.ListView):
     model = MicDataRecord
@@ -40,11 +39,10 @@ class StatisticalDetailView(generic.DetailView):
         mic_Data_Record = self.get_object().mic_Data_Record
         name = str(mic_Data_Record)
         context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, spec_DB_dict, snr_DB_dict, stat_DB_dict, temp_DB, spec_DB, snr_DB, stat_DB = detail_intro(context, mic_Data_Record)
-        context, hpss_array = assign_hpss_arrays(context, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
         
         for attr, value in stat_DB_dict.items():
             if value == None:
-                context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record, hpss_array)
+                context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
                 setattr(stat_DB, attr, context[attr])
                 context[attr] = file_path_to_img(context[attr])
             else:
@@ -62,10 +60,9 @@ class StatisticalRefreshedDetailView(generic.DetailView):
         mic_Data_Record = self.get_object().mic_Data_Record
         name = str(mic_Data_Record)
         context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict, spec_DB_dict, snr_DB_dict, stat_DB_dict, temp_DB, spec_DB, snr_DB, stat_DB = detail_intro(context, mic_Data_Record)
-        context, hpss_array = assign_hpss_arrays(context, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
         
         for attr, value in stat_DB_dict.items():
-            context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record, hpss_array)
+            context = find_graph(attr, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
             setattr(stat_DB, attr, context[attr])
             context[attr] = file_path_to_img(context[attr])
         stat_DB.save()

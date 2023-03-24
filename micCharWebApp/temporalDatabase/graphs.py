@@ -9,11 +9,12 @@ from acoustics.cepstrum import complex_cepstrum
 fig_size = (6, 4.5)
 fig_size_xl = (12, 3)
 
-def get_signal(lib_list, sig, name, mic_Data_Record):
+def get_signal(sig, name, mic_Data_Record):
+    sr = sig.fs
     plt.figure(2, figsize=fig_size_xl).clf()
-    librosa.display.waveshow(sig[0:int(lib_list[0]/10)], sr=lib_list[0], max_points=sys.maxsize, label='Signal', lw=0.5, alpha=0.75)
-    ampl_env = sig.amplitude_envelope()[0:int(lib_list[0]/10):1]
-    t = np.arange(0, 1/10, 1/lib_list[0])
+    librosa.display.waveshow(sig[0:int(sr/10)], sr=sr, max_points=sys.maxsize, label='Signal', lw=0.5, alpha=0.75)
+    ampl_env = sig.amplitude_envelope()[0:int(sr/10):1]
+    t = np.arange(0, 1/10, 1/sr)
     plt.plot(t, ampl_env, 'r', label='Envelope', linestyle='dashed', lw=0.25, alpha=0.75)
     plt.plot(t, -ampl_env, 'r', linestyle='dashed', lw=0.25, alpha=0.75)
     plt.title(name + ' Time Signal & Hilbert Envelope (1st tenth of a second)')
@@ -24,11 +25,12 @@ def get_signal(lib_list, sig, name, mic_Data_Record):
     plt.tight_layout()
     return get_graph('Temporal Graphs', 'signal_Graph', mic_Data_Record)
 
-def get_cepstrum(lib_list, sig, name, mic_Data_Record):
+def get_cepstrum(sig, name, mic_Data_Record):
+    sr = sig.fs
     plt.figure(2, figsize=fig_size_xl).clf()
-    t = np.arange(0, 1/10, 1/lib_list[0])
+    t = np.arange(0, 1/10, 1/sr)
     ceps, _ = complex_cepstrum(sig)
-    ceps = ceps[0:int(lib_list[0]/10)]
+    ceps = ceps[0:int(sr/10)]
     plt.plot(t, ceps, lw=0.75, alpha=0.75)
     plt.title(name + ' Cepstrum (1st tenth of a second)')
     plt.xlabel('Time (s)')
@@ -36,10 +38,11 @@ def get_cepstrum(lib_list, sig, name, mic_Data_Record):
     plt.tight_layout()
     return get_graph('Temporal Graphs', 'cepstrum_Graph', mic_Data_Record)
 
-def get_inst_phase(lib_list, sig, name, mic_Data_Record):
+def get_inst_phase(sig, name, mic_Data_Record):
+    sr = sig.fs
     plt.figure(2, figsize=fig_size_xl).clf()
-    t = np.arange(0, 1/10, 1/lib_list[0])
-    inst_phase = sig.instantaneous_phase()[0:int(lib_list[0]/10)]
+    t = np.arange(0, 1/10, 1/sr)
+    inst_phase = sig.instantaneous_phase()[0:int(sr/10)]
     plt.plot(t, inst_phase, lw=1, alpha=0.5)
     plt.title(name + ' Hilbert Phase (1st tenth of a second)')
     plt.xlabel('Time (s)')
@@ -113,6 +116,8 @@ def get_autocorr_tempogram(lib_list, name, mic_Data_Record):
 
 def get_fourier_tempogram(lib_list, name, mic_Data_Record):
     tempogram = librosa.feature.fourier_tempogram(y=lib_list[1], sr=lib_list[0])
+    this_sum = np.sum(lib_list[1][~(lib_list[1] == 0)])
+    tempogram[~np.isfinite(tempogram)] = 0.0
     tempo = librosa.beat.tempo(y=lib_list[1], sr=lib_list[0])[0]
     plt.figure(1, figsize=fig_size).clf()
     temp = librosa.display.specshow(np.abs(tempogram)/np.abs(tempogram).max(), sr=lib_list[0], cmap='turbo', x_axis='time', y_axis='fourier_tempo')
