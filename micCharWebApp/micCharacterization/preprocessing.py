@@ -35,13 +35,7 @@ def apply_bp_to_lib(lib, low_high, order):
     return [lib[0], butter_bandpass_filter(lib[1], low_high, lib[0], order)]
 
 def apply_bp_to_Signal(sig, low_high, order, snr=False):
-    print()
-    print(sig)
-    
     sr = sig.fs
-    
-    print(sig)
-    print()
     if snr:
         return Signal(butter_bandpass_filter(sig, low_high, sr, order), fs=sr)
     return Signal(butter_bandpass_filter(sig[1], low_high, sr, order), fs=sr)
@@ -69,9 +63,6 @@ def butter_bandpass(low_high, fs, order):
 
 def butter_bandpass_filter(data, low_high, fs, order):
     b, a = butter_bandpass(low_high, fs, order)
-    # print()
-    # print(len(data))
-    # print()
     y = filtfilt(b, a, data)
     # y[~np.isfinite(y)] = 0.0
     y = y.astype(np.float32)

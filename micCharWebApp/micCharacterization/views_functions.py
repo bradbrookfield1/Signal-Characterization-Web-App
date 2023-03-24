@@ -313,9 +313,6 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 
                 norm_noisy_sig[0][1] = pd.Series(signal.welch(norm_noisy_sig[0][1], fs=norm_noisy_sig[0][0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()
                 norm_noise[0][1] = pd.Series(signal.welch(norm_noise[0][1], fs=norm_noise[0][0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()
-                
-                # noisy_sig_welch = [norm_noisy_sig[0][0], pd.Series(signal.welch(norm_noisy_sig[0][1], fs=norm_noisy_sig[0][0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()]
-                # noise_welch = [norm_noise[0][0], pd.Series(signal.welch(norm_noise[0][1], fs=norm_noise[0][0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()]
                 context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Welch', graph_type, name, mic_Data_Record)
             else:
                 context[graph_type] = None
@@ -407,15 +404,9 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 ns_os = onset.onset_strength(y=norm_noisy_sig[0][1], sr=norm_noisy_sig[0][0])
-                # norm_ns_os = ns_os/(ns_os.max())
-                
                 norm_noisy_sig[0][1] = ns_os/(ns_os.max())
-                
                 n_os = onset.onset_strength(y=norm_noise[0][1], sr=norm_noise[0][0])
-                # norm_n_os = n_os/(n_os.max())
-                
                 norm_noise[0][1] = n_os/(n_os.max())
-                
                 context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Onset Strength', graph_type, name, mic_Data_Record)
             else:
                 context[graph_type] = None
