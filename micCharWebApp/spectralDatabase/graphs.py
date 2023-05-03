@@ -18,7 +18,7 @@ def get_PSD(lib_list, name, mic_Data_Record):
     plt.semilogy(avg_freq, avg_data_pd, label='Rolled', lw=1, alpha=0.75)
     plt.title(name + '\nPower Spectral Density Estimate')
     plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Power Spectral Density (V^2/Hz)')
+    plt.ylabel(r'Power Spectral Density $\left(\frac{V^{2}}{Hz}\right)$')
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
@@ -34,6 +34,38 @@ def get_phase_spectrum(sig, name, mic_Data_Record):
     plt.grid(True)
     plt.tight_layout()
     return get_graph('Spectral Graphs', 'phase_Spectrum_Graph', mic_Data_Record)
+
+def get_noise_PSD(lib_list, name, mic_Data_Record):
+    avg_freq, avg_data = signal.welch(x=lib_list[1], fs=lib_list[0], average='mean')
+    avg_data_pd = pd.Series(avg_data).rolling(13, center=True).mean().to_numpy()
+    plt.figure(1, figsize=fig_size).clf()
+    plt.semilogy(avg_freq, avg_data, label='Raw PSD', lw=1, alpha=0.75)
+    plt.semilogy(avg_freq, avg_data_pd, label='Rolled', lw=1, alpha=0.75)
+    plt.title(name + '\nPower Spectral Density Estimate')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel(r'Power Spectral Density $\left(\frac{V^{2}}{Hz}\right)$')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    return get_graph('Spectral Graphs', 'noise_PSD_Graph', mic_Data_Record)
+
+def get_overlapping_PSD(noisy_sig, noise, name, mic_Data_Record):
+    noisy_sig_freq, noisy_sig_data = signal.welch(x=noisy_sig[1], fs=noisy_sig[0], average='mean')
+    noisy_sig_data_pd = pd.Series(noisy_sig_data).rolling(13, center=True).mean().to_numpy()
+    noise_freq, noise_data = signal.welch(x=noise[1], fs=noise[0], average='mean')
+    noise_data_pd = pd.Series(noise_data).rolling(13, center=True).mean().to_numpy()
+    plt.figure(1, figsize=fig_size).clf()
+    plt.semilogy(noisy_sig_freq, noisy_sig_data, label='S + N PSD', lw=1, alpha=0.75)
+    plt.semilogy(noisy_sig_freq, noisy_sig_data_pd, label='S + N Rolled', lw=1, alpha=0.75)
+    plt.semilogy(noise_freq, noise_data, label='N PSD', lw=1, alpha=0.75)
+    plt.semilogy(noise_freq, noise_data_pd, label='N Rolled', lw=1, alpha=0.75)
+    plt.title(name + '\nPower Spectral Density Estimate')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel(r'Power Spectral Density $\left(\frac{V^{2}}{Hz}\right)$')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    return get_graph('Spectral Graphs', 'overlapping_PSD_Graph', mic_Data_Record)
 
 def get_spectrogram(lib_list, name, mic_Data_Record):
     ps_fft_data = librosa.stft(lib_list[1])
@@ -116,8 +148,8 @@ def get_harmonic(lib_list, name, mic_Data_Record):
 
 def get_harmonic_prediction(lib_list, num_harmonics, name, mic_Data_Record):
     tm = len(lib_list[1])/lib_list[0]
-    pow_of_2 = math.floor(math.log2(len(lib_list[1])))
-    lib_time_data = signal.resample(lib_list[1], 2**pow_of_2)
+    pow_of_2 = np.int64(np.floor(np.log2(len(lib_list[1]))))
+    lib_time_data = signal.resample(lib_list[1], np.power(2, pow_of_2))
     new_sr = len(lib_time_data)/tm
     for r in range(1, num_harmonics + 1):
         if r == 1:
@@ -129,7 +161,7 @@ def get_harmonic_prediction(lib_list, num_harmonics, name, mic_Data_Record):
     harm_preds_temp = librosa.amplitude_to_db(harm_preds_temp)
     freqs = librosa.fft_frequencies(sr=new_sr, n_fft=len(lib_time_data)*2)[1:]
     plt.figure(1, figsize=fig_size).clf()
-    plt.loglog(freqs, harm_preds_temp, label='', lw=1, alpha=0.75)
+    plt.plot(freqs, harm_preds_temp, label='', lw=1, alpha=0.75)
     plt.title(name + '\nFundamental Frequency Prediction')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Power (dB)')

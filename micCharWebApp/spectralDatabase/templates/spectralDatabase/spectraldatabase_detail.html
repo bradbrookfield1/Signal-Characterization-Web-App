@@ -9,11 +9,8 @@
 		Microphone Data Record Spectral Details
 	</h1>
 	<div class="row">
-		<div class="col-md-6">
+		<div class="col">
 			Record Name: {{ object.record_Name }}
-		</div>
-		<div class="col-md-6">
-			Prediction Harmonics: {{ object.prediction_Harmonics }}
 		</div>
 	</div><br>
 	<div class="row">
@@ -154,9 +151,33 @@
 		</div>
 	</div><br>
 	<div class="row">
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ noise_PSD_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ overlapping_PSD_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+	</div><br>
+	<div class="row">
 		<div class="col">
 			<center>
+				<img src="data:image/png;base64, {{ overlapping_Harmonic_PSD_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+	</div><br>
+	<div class="row">
+		<div class="col-md-6">
+			<center>
 				<img src="data:image/png;base64, {{ spectrogram|safe }}" class="img-fluid">
+			</center>
+		</div>
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ harmonic_Prediction_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br>

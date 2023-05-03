@@ -50,7 +50,6 @@ class Log(models.Model):
 class MicDataRecord(models.Model):
     record_Name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000, blank=True)
-    prediction_Harmonics = models.IntegerField(blank=True, null=True)
     
     noisy_Signal_File = models.FileField(upload_to='Recordings/Original/noisy_Signal_File/', blank=True, null=True)
     noisy_Signal_Harmonics = models.FileField(upload_to='Recordings/Harmonics/noisy_Signal_File/', blank=True, null=True)
@@ -90,7 +89,7 @@ class MicDataRecord(models.Model):
             file_name_list = []
             record_DB_dict = record.__dict__
             record_DB_dict_fixed = copy.deepcopy(record_DB_dict)
-            del record_DB_dict_fixed['record_Name'], record_DB_dict_fixed['description'], record_DB_dict_fixed['prediction_Harmonics']
+            del record_DB_dict_fixed['record_Name'], record_DB_dict_fixed['description'],
             del record_DB_dict_fixed['noisy_Signal_Harmonics'], record_DB_dict_fixed['measured_Signal_Harmonics']
             del record_DB_dict_fixed['noise_Harmonics'], record_DB_dict_fixed['true_Signal_Harmonics']
             del record_DB_dict_fixed['noisy_Signal_Percussives'], record_DB_dict_fixed['measured_Signal_Percussives']

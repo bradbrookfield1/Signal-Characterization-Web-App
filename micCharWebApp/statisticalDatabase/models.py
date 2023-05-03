@@ -51,6 +51,12 @@ class StatisticalDatabase(models.Model):
     onset_Strength_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     inst_Phase_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     signal_Inversion_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    kernel_Function_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    spectrogram_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    harmonic_spectrogram_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    percussive_spectrogram_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    autocorrelation_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
+    lag_Autocorrelation_PDF_Graph = models.CharField(max_length=1000, default=None, null=True)
     
     def get_absolute_url(self):
         return reverse('detail', kwargs={'pk': self.pk})

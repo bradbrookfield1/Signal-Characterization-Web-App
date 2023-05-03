@@ -3,6 +3,9 @@ import pandas as pd
 from scipy import signal
 from .constants import freqs, window, speed_noise_spl_dict, spl_speed, spl_src, vel_array, dir_fact
 from .constants import tunnel_dist, temperature, relative_humidity, p_bar, p_ref
+import tensorflow as tf
+from sklearn.kernel_approximation import Nystroem
+# from sklearnex import patch_sklearn
 
 def calc_coeff(freqs, distance, temperature, rel_hum, p_bar, p_ref):
     p_sat_ref = p_sat_ref_easy(temperature)
@@ -115,7 +118,6 @@ def p_sat_ref_easy(temperature):
 
 def mol_conc_water_vapor(rel_hum, p_sat_ref, p_bar, p_ref):
     return (100*rel_hum*(p_sat_ref/(p_bar/p_ref)))/100
-    # return (100*rel_hum*(p_sat_ref*p_ref/(p_bar)))/100
 
 def mol_mass_mix(mol_conc_water_vapor):
     return mol_conc_water_vapor*0.018016 + (1 - mol_conc_water_vapor)*0.02897
@@ -129,28 +131,14 @@ def speed_of_sound(temperature, mol_mass_mix, heat_cap_ratio_mix):
 def air_density(temperature, p_bar, mol_mass_mix):
     return mol_mass_mix*p_bar/(8.314462*temperature)
 
-# def oxy_relax_freq(p_ref, mol_conc_water_vapor):
-#     return (1/(p_ref/101325))*(24 + 40400*mol_conc_water_vapor*((0.02 + mol_conc_water_vapor)/(0.391 + mol_conc_water_vapor)))
-
 def oxy_relax_freq(p_bar, p_ref, mol_conc_water_vapor):
     return (p_bar/p_ref)*(24 + 40400*mol_conc_water_vapor*((0.02 + mol_conc_water_vapor)/(0.391 + mol_conc_water_vapor)))
-    # return (1/p_ref)*(24 + 40400*mol_conc_water_vapor*((0.02 + mol_conc_water_vapor)/(0.391 + mol_conc_water_vapor)))
-
-# def nit_relax_freq(temperature, p_ref, mol_conc_water_vapor):
-#     return (1/(p_ref/101325))*np.power(293.15/temperature, 0.5)*(9 + 280*mol_conc_water_vapor*np.exp(-4.17*(np.power(293.15/temperature, 1/3) - 1)))
 
 def nit_relax_freq(temperature, p_bar, p_ref, mol_conc_water_vapor):
     return (p_bar/p_ref)*np.power(temperature/293.15, -0.5)*(9 + 280*mol_conc_water_vapor*np.exp(-4.17*(np.power(temperature/293.15, -1/3) - 1)))
-    # return (1/p_ref)*np.power(temperature/293.15, -0.5)*(9 + 280*mol_conc_water_vapor*np.exp(-4.17*(np.power(temperature/293.15, -1/3) - 1)))
-
-# def absorption_coeff(temperature, p_ref, freq, oxy_relax_freq, nit_relax_freq):
-#     return (np.power(freq, 2)/(p_ref/101325))*(1.84*(10**-11)*np.power(temperature/293.15, 0.5) + np.power(temperature/293.15, -5/2)*(0.01278*(np.exp(-2239.1/temperature)/(oxy_relax_freq + np.power(freq, 2)/oxy_relax_freq)) + 0.1068*(np.exp(-3352/temperature)/(nit_relax_freq + np.power(freq, 2)/nit_relax_freq))))
 
 def absorption_coeff(temperature, p_bar, p_ref, freq, oxy_relax_freq, nit_relax_freq):
-    # return 10*np.log10(np.exp(np.power(freq, 2)*np.power(temperature/293.15, 1/2)*(1.84*(10**-11)*(p_ref/p_bar) + np.power(temperature/293.15, -3)*(0.01275*(np.exp(-2239.1/temperature)/(oxy_relax_freq + np.power(freq, 2)/oxy_relax_freq)) + 0.1068*(np.exp(-3352/temperature)/(nit_relax_freq + np.power(freq, 2)/nit_relax_freq))))))
-    # return 10*np.log10(np.exp(np.power(freq/p_bar, 2)*(1.84*(10**-11)*np.power(p_bar/p_ref, -1)*np.power(temperature/293.15, 1/2) + np.power(temperature/293.15, -5/2)*(0.01275*(np.exp(-2239/temperature)/(oxy_relax_freq/p_bar + np.power(freq/p_bar, 2)/(oxy_relax_freq/p_bar))) + 0.1068*(np.exp(-3352/temperature)/(nit_relax_freq/p_bar + np.power(freq/p_bar, 2)/(nit_relax_freq/p_bar)))))))
     return 10*np.log10(np.exp(np.power(freq, 2)*(1.84*(10**-11)*np.power(p_bar/p_ref, -1)*np.power(temperature/293.15, 1/2) + np.power(temperature/293.15, -5/2)*(0.01275*np.exp(-2239/temperature)*(oxy_relax_freq/(np.power(freq, 2) + np.power(oxy_relax_freq, 2))) + 0.1068*np.exp(-3352/temperature)*(nit_relax_freq/(np.power(freq, 2) + np.power(nit_relax_freq, 2)))))))
-    # return 10*np.log10(np.exp(np.power(freq/p_bar, 2)*(1.84*(10**-11)*np.power(p_bar/p_ref, -1)*np.power(temperature/293.15, 1/2) + np.power(temperature/293.15, -5/2)*(0.01275*np.exp(-2239/temperature)*((oxy_relax_freq/p_bar)/(np.power(freq/p_bar, 2) + np.power(oxy_relax_freq/p_bar, 2))) + 0.1068*np.exp(-3352/temperature)*((nit_relax_freq/p_bar)/(np.power(freq/p_bar, 2) + np.power(nit_relax_freq/p_bar, 2)))))))
 
 def fft_vectorized(sig, r_harmonic):
     sig = np.asarray(sig, dtype=float)
@@ -209,3 +197,31 @@ def get_SNR_arrays(list_1, list_2, snr_type):
     db_rolled_both = 10*np.log10(pd.Series(snr_rolled_before).rolling(window, center=True).mean().to_numpy())
     
     return list_1_freq, db_plain, db_rolled_before, db_rolled_both
+
+def kernel_func(data, dim_mult=5, kernel_type='rbf', gamma=1.0, degree=3.0, coeff=1.0):
+    # # scale = sqrt(input_dim / 2)
+    # gauss = tf.keras.layers.experimental.RandomFourierFeatures(output_dim=dim_mult*len(data), kernel_initializer='gaussian')
+    # gauss.kernel_scale = np.sqrt(len(data)/2)
+    # # scale = 1.0
+    # # laplace = tf.keras.layers.experimental.RandomFourierFeatures(output_dim=dim_mult*len(data), kernel_intializer='laplacian')
+    # new_tens = gauss.call(data)
+    # return new_tens.numpy()
+    
+    # patch_sklearn()
+    data = data.reshape(-1, 1)
+    # data = data.reshape(np.sqrt(len(data)), np.sqrt(len(data)))
+    # Kernel type list: 'additive_chi2', 'chi2', 'linear', 'poly' or 'polynomial', 'rbf', 'laplacian', 'sigmoid', 'cosine'
+    kernel = Nystroem(kernel=kernel_type, n_components=dim_mult, gamma=gamma, degree=degree, coef0=coeff)
+    return kernel.fit_transform(data)
+
+def homemade_kernel_func(data):
+    # high_dim_data = []
+    # for d in data:
+    #     high_dim_data.append([1, np.sqrt(2)*d, np.power(d, 2)])
+    # return high_dim_data
+    
+    col1 = np.ones_like(data)
+    col2 = data*np.sqrt(2)
+    col3 = np.power(data, 2)
+    ans = np.append(col1, col2)
+    return np.append(ans, col3)

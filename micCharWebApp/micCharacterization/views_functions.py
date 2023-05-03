@@ -11,16 +11,17 @@ from statisticalDatabase.models import StatisticalDatabase
 import soundfile as sf
 import pandas as pd
 import numpy as np
-from .preprocessing import charts_preprocess, apply_norm_everywhere, apply_bp_everywhere, assign_hpss_arrays
+from .preprocessing import charts_preprocess, apply_norm_everywhere, apply_bp_everywhere, assign_hpss_arrays, apply_stat_norm_everywhere
 from . import graphs_propagation
-from .calculations import get_SNR_arrays, db_array_to_mean
+from .calculations import get_SNR_arrays, db_array_to_mean, kernel_func, homemade_kernel_func
 from .constants import tunnel_dist, dist_array_lin, dist_array_log, dist_array_big
-from .constants import p_bar_array, p_ref, window
+from .constants import p_bar_array, p_ref, window, pred_harm
+from .constants import stat_norm, filter_sigs, low_high, order, dim_mult, kernel_type, gamma, degree, coeff
 from matplotlib import pyplot as plt
 from scipy import signal
 from acoustics import Signal
 from librosa import A_weighting, C_weighting, stft, istft, decompose, onset
-import copy, os, wave
+import copy, os, wave, time, librosa
 
 def help_get_context():
     file_set_list = MicDataRecord.get_fileset()
@@ -92,7 +93,7 @@ def list_intro(db_type):
 def detail_intro(context, mic_Data_Record):
     record_DB_dict = mic_Data_Record.__dict__
     record_DB_dict_fixed = copy.deepcopy(record_DB_dict)
-    del record_DB_dict_fixed['record_Name'], record_DB_dict_fixed['description'], record_DB_dict_fixed['prediction_Harmonics']
+    del record_DB_dict_fixed['record_Name'], record_DB_dict_fixed['description']
     del record_DB_dict_fixed['noisy_Signal_Harmonics'], record_DB_dict_fixed['measured_Signal_Harmonics']
     del record_DB_dict_fixed['noise_Harmonics'], record_DB_dict_fixed['true_Signal_Harmonics']
     del record_DB_dict_fixed['noisy_Signal_Percussives'], record_DB_dict_fixed['measured_Signal_Percussives']
@@ -122,7 +123,7 @@ def detail_intro(context, mic_Data_Record):
     stat_DB_dict_fixed = copy.deepcopy(stat_DB_dict)
     del temp_DB_dict_fixed['_state'], temp_DB_dict_fixed['id'], temp_DB_dict_fixed['mic_Data_Record_id']
     del spec_DB_dict_fixed['_state'], spec_DB_dict_fixed['id'], spec_DB_dict_fixed['mic_Data_Record_id']
-    del spec_DB_dict_fixed['harmonic_Prediction_Graph']
+    # del spec_DB_dict_fixed['harmonic_Prediction_Graph']
     del snr_DB_dict_fixed['_state'], snr_DB_dict_fixed['id'], snr_DB_dict_fixed['mic_Data_Record_id']
     del stat_DB_dict_fixed['_state'], stat_DB_dict_fixed['id'], stat_DB_dict_fixed['mic_Data_Record_id']
     return context, norm_noisy_sig, norm_sig, norm_noise, true_sig, temp_DB_dict_fixed, spec_DB_dict_fixed, snr_DB_dict_fixed, stat_DB_dict_fixed, temp_DB, spec_DB, snr_DB, stat_DB
@@ -144,25 +145,26 @@ def delete_intro(mic_Data_Record):
     return temp_DB_dict_fixed, spec_DB_dict_fixed, snr_DB_dict_fixed, stat_DB_dict_fixed
 
 def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record=None, hpss_array=None):
-    stat_norm = True
-    filter_sigs = True
-    low_high = [50, 999]
-    order = 4
+    if graph_type == 'harmonic_HPSS_PDF_Graph' or graph_type == 'percussive_HPSS_PDF_Graph' or graph_type == 'overlapping_Harmonic_PSD_Graph':
+        context, hpss_array = assign_hpss_arrays(context, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
+        plot_me_ns_harm = copy.deepcopy(hpss_array[0]) if hpss_array[0] else None
+        plot_me_ns_perc = copy.deepcopy(hpss_array[1]) if hpss_array[1] else None
+        plot_me_n_harm = copy.deepcopy(hpss_array[4]) if hpss_array[4] else None
+        plot_me_n_perc = copy.deepcopy(hpss_array[5]) if hpss_array[5] else None
     
-    context, hpss_array = assign_hpss_arrays(context, norm_noisy_sig, norm_sig, norm_noise, true_sig, mic_Data_Record)
-    plot_me_ns_harm = copy.deepcopy(hpss_array[0]) if hpss_array[0] else None
-    plot_me_ns_perc = copy.deepcopy(hpss_array[1]) if hpss_array[1] else None
-    plot_me_n_harm = copy.deepcopy(hpss_array[4]) if hpss_array[4] else None
-    plot_me_n_perc = copy.deepcopy(hpss_array[5]) if hpss_array[5] else None
+    norm_noisy_sig_2 = copy.deepcopy(norm_noisy_sig)
+    norm_sig_2 = copy.deepcopy(norm_sig)
+    norm_noise_2 = copy.deepcopy(norm_noise)
+    true_sig_2 = copy.deepcopy(true_sig)
     
     if norm_noisy_sig:
-        plot_me = copy.deepcopy(norm_noisy_sig)
+        plot_me = norm_noisy_sig_2
     elif norm_sig:
-        plot_me = copy.deepcopy(norm_sig)
+        plot_me = norm_sig_2
     elif norm_noise:
-        plot_me = copy.deepcopy(norm_noise)
+        plot_me = norm_noise_2
     else:
-        plot_me = copy.deepcopy(true_sig)
+        plot_me = true_sig_2
     
     match graph_type:
         case 'signal_Graph':
@@ -205,6 +207,31 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
             plot_me = apply_norm_everywhere(plot_me) if stat_norm else plot_me
             plot_me = apply_bp_everywhere(plot_me, low_high, order) if filter_sigs else plot_me
             context[graph_type] = spec.get_phase_spectrum(plot_me[1], name, mic_Data_Record)
+        case 'noise_PSD_Graph':
+            if norm_noise_2:
+                norm_noise_2 = apply_norm_everywhere(norm_noise_2) if stat_norm else norm_noise_2
+                norm_noise_2 = apply_bp_everywhere(norm_noise_2, low_high, order) if filter_sigs else norm_noise_2
+                context[graph_type] = spec.get_noise_PSD(norm_noise_2[2], name, mic_Data_Record)
+            else:
+                context[graph_type] = None
+        case 'overlapping_PSD_Graph':
+            if norm_noisy_sig_2 and norm_noise_2:
+                norm_noisy_sig_2 = apply_norm_everywhere(norm_noisy_sig_2) if stat_norm else norm_noisy_sig_2
+                norm_noisy_sig_2 = apply_bp_everywhere(norm_noisy_sig_2, low_high, order) if filter_sigs else norm_noisy_sig_2
+                norm_noise_2 = apply_norm_everywhere(norm_noise_2) if stat_norm else norm_noise_2
+                norm_noise_2 = apply_bp_everywhere(norm_noise_2, low_high, order) if filter_sigs else norm_noise_2
+                context[graph_type] = spec.get_overlapping_PSD(norm_noisy_sig_2[2], norm_noise_2[2], name, mic_Data_Record)
+            else:
+                context[graph_type] = None
+        case 'overlapping_Harmonic_PSD_Graph':
+            if plot_me_ns_harm and plot_me_n_harm:
+                plot_me_ns_harm = apply_norm_everywhere(plot_me_ns_harm) if stat_norm else plot_me_ns_harm
+                plot_me_ns_harm = apply_bp_everywhere(plot_me_ns_harm, low_high, order) if filter_sigs else plot_me_ns_harm
+                plot_me_n_harm = apply_norm_everywhere(plot_me_n_harm) if stat_norm else plot_me_n_harm
+                plot_me_n_harm = apply_bp_everywhere(plot_me_n_harm, low_high, order) if filter_sigs else plot_me_n_harm
+                context[graph_type] = spec.get_overlapping_PSD(plot_me_ns_harm[2], plot_me_n_harm[2], name, mic_Data_Record)
+            else:
+                context[graph_type] = None
         case 'pure_Signal_SNR_Graph':
             if norm_sig and norm_noise:
                 norm_sig = apply_bp_everywhere(norm_sig, low_high, order, True) if filter_sigs else norm_sig
@@ -235,10 +262,10 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'average_SNR_Distance_Graph':
             if norm_sig and norm_noise or norm_noisy_sig and norm_sig or norm_noisy_sig and norm_noise or norm_noisy_sig and true_sig:
-                norm_sig = apply_bp_everywhere(norm_sig, low_high, order, True) if norm_sig and filter_sigs else None
-                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order, True) if norm_noisy_sig and filter_sigs else None
-                norm_noise = apply_bp_everywhere(norm_noise, low_high, order, True) if norm_noise and filter_sigs else None
-                true_sig = apply_bp_everywhere(true_sig, low_high, order, True) if true_sig and filter_sigs else None
+                # norm_sig = apply_bp_everywhere(norm_sig, low_high, order, True) if norm_sig and filter_sigs else None
+                # norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order, True) if norm_noisy_sig and filter_sigs else None
+                # norm_noise = apply_bp_everywhere(norm_noise, low_high, order, True) if norm_noise and filter_sigs else None
+                # true_sig = apply_bp_everywhere(true_sig, low_high, order, True) if true_sig and filter_sigs else None
                 
                 db_rolled_both = []
                 if norm_sig and norm_noise:
@@ -274,13 +301,13 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
             plot_me = apply_bp_everywhere(plot_me, low_high, order) if filter_sigs else plot_me
             context[graph_type] = spec.get_harmonic(plot_me[0], name, mic_Data_Record)
         case 'harmonic_Prediction_Graph':
-            plot_me = apply_norm_everywhere(plot_me) if stat_norm else plot_me
-            plot_me = apply_bp_everywhere(plot_me, low_high, order) if filter_sigs else plot_me
-            context[graph_type] = spec.get_harmonic_prediction(plot_me[0], mic_Data_Record.prediction_Harmonics, name, mic_Data_Record)
+            # plot_me = apply_norm_everywhere(plot_me) if stat_norm else plot_me
+            # plot_me = apply_bp_everywhere(plot_me, low_high, order) if filter_sigs else plot_me
+            context[graph_type] = spec.get_harmonic_prediction(plot_me[0], pred_harm, name, mic_Data_Record)
         case 'original_PDF_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Original', graph_type, name, mic_Data_Record)
@@ -288,8 +315,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'harmonic_HPSS_PDF_Graph':
             if plot_me_ns_harm and plot_me_n_harm:
-                plot_me_ns_harm = apply_norm_everywhere(plot_me_ns_harm) if stat_norm else plot_me_ns_harm
-                plot_me_n_harm = apply_norm_everywhere(plot_me_n_harm) if stat_norm else plot_me_n_harm
+                if stat_norm:
+                    plot_me_ns_harm, plot_me_n_harm = apply_stat_norm_everywhere(plot_me_ns_harm, plot_me_n_harm)
                 plot_me_ns_harm = apply_bp_everywhere(plot_me_ns_harm, low_high, order) if filter_sigs else plot_me_ns_harm
                 plot_me_n_harm = apply_bp_everywhere(plot_me_n_harm, low_high, order) if filter_sigs else plot_me_n_harm
                 context[graph_type] = stat.get_original_PDFs(plot_me_ns_harm, plot_me_n_harm, 'Harmonic HPSS', graph_type, name, mic_Data_Record)
@@ -297,8 +324,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'percussive_HPSS_PDF_Graph':
             if plot_me_ns_perc and plot_me_n_perc:
-                plot_me_ns_perc = apply_norm_everywhere(plot_me_ns_perc) if stat_norm else plot_me_ns_perc
-                plot_me_n_perc = apply_norm_everywhere(plot_me_n_perc) if stat_norm else plot_me_n_perc
+                if stat_norm:
+                    plot_me_ns_perc, plot_me_n_perc = apply_stat_norm_everywhere(plot_me_ns_perc, plot_me_n_perc)
                 plot_me_ns_perc = apply_bp_everywhere(plot_me_ns_perc, low_high, order) if filter_sigs else plot_me_ns_perc
                 plot_me_n_perc = apply_bp_everywhere(plot_me_n_perc, low_high, order) if filter_sigs else plot_me_n_perc
                 context[graph_type] = stat.get_original_PDFs(plot_me_ns_perc, plot_me_n_perc, 'Percussive HPSS', graph_type, name, mic_Data_Record)
@@ -306,20 +333,22 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'welch_PDF_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 
                 norm_noisy_sig[0][1] = pd.Series(signal.welch(norm_noisy_sig[0][1], fs=norm_noisy_sig[0][0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()
                 norm_noise[0][1] = pd.Series(signal.welch(norm_noise[0][1], fs=norm_noise[0][0], average='mean')[1]).rolling(13, center=True).mean().to_numpy()
+                norm_noisy_sig[0][1][~np.isfinite(norm_noisy_sig[0][1])] = 0.0
+                norm_noise[0][1][~np.isfinite(norm_noise[0][1])] = 0.0
                 context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Welch', graph_type, name, mic_Data_Record)
             else:
                 context[graph_type] = None
         case 'magnitude_FFT_Spectrum_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Magnitude FFT Spectrum', graph_type, name, mic_Data_Record)
@@ -327,8 +356,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'magnitude_FFT_Time_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Magnitude FFT Time', graph_type, name, mic_Data_Record)
@@ -336,8 +365,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'phase_FFT_Spectrum_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Phase FFT Spectrum', graph_type, name, mic_Data_Record)
@@ -345,8 +374,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'phase_FFT_Time_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Phase FFT Time', graph_type, name, mic_Data_Record)
@@ -354,8 +383,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'magnitude_FMT_Spectrum_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Magnitude Mellin Spectrum', graph_type, name, mic_Data_Record)
@@ -363,8 +392,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'magnitude_FMT_Time_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Magnitude Mellin Time', graph_type, name, mic_Data_Record)
@@ -372,8 +401,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'phase_FMT_Spectrum_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Phase Mellin Spectrum', graph_type, name, mic_Data_Record)
@@ -381,8 +410,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'phase_FMT_Time_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_fft_PDFs(norm_noisy_sig, norm_noise, 'Phase Mellin Time', graph_type, name, mic_Data_Record)
@@ -390,8 +419,8 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'hilbert_PDF_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_Signal_PDFs(norm_noisy_sig, norm_noise, 'Hilbert Transform', graph_type, name, mic_Data_Record)
@@ -399,21 +428,24 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'onset_Strength_PDF_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 ns_os = onset.onset_strength(y=norm_noisy_sig[0][1], sr=norm_noisy_sig[0][0])
                 norm_noisy_sig[0][1] = ns_os/(ns_os.max())
                 n_os = onset.onset_strength(y=norm_noise[0][1], sr=norm_noise[0][0])
                 norm_noise[0][1] = n_os/(n_os.max())
-                context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Onset Strength', graph_type, name, mic_Data_Record)
+                if np.isfinite(norm_noisy_sig[0][1]).all() and np.isfinite(norm_noise[0][1]).all():
+                    context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Onset Strength', graph_type, name, mic_Data_Record)
+                else:
+                    context[graph_type] = None
             else:
                 context[graph_type] = None
         case 'inst_Phase_PDF_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
                 context[graph_type] = stat.get_Signal_PDFs(norm_noisy_sig, norm_noise, 'Instantaneous Phase', graph_type, name, mic_Data_Record)
@@ -421,11 +453,137 @@ def find_graph(graph_type, context, name, norm_noisy_sig, norm_sig, norm_noise, 
                 context[graph_type] = None
         case 'signal_Inversion_PDF_Graph':
             if norm_noisy_sig and norm_noise:
-                norm_noisy_sig = apply_norm_everywhere(norm_noisy_sig) if stat_norm else norm_noisy_sig
-                norm_noise = apply_norm_everywhere(norm_noise) if stat_norm else norm_noise
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
                 norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
                 norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
-                context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Inverted Signal', graph_type, name, mic_Data_Record)
+                if np.isfinite(norm_noisy_sig[0][1]).all() and np.isfinite(norm_noise[0][1]).all():
+                    context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Inverted Signal', graph_type, name, mic_Data_Record)
+                else:
+                    context[graph_type] = None
+            else:
+                context[graph_type] = None
+        case 'harmonic_Spectral_Transform_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
+                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
+                norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
+                context[graph_type] = None
+            else:
+                context[graph_type] = None
+        case 'kernel_Function_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
+                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
+                norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
+                
+                start = time.time()
+                norm_noisy_sig[2][1] = kernel_func(norm_noisy_sig[2][1], dim_mult, kernel_type, gamma, degree, coeff)
+                print()
+                print(time.time() - start)
+                start = time.time()
+                norm_noise[2][1] = kernel_func(norm_noise[2][1], dim_mult, kernel_type, gamma, degree, coeff)
+                print(time.time())
+                print()
+
+                # start = time.time()
+                # norm_noisy_sig[0][1] = homemade_kernel_func(norm_noisy_sig[0][1])
+                # print()
+                # mark1 = time.time()
+                # print(mark1 - start)
+                # norm_noise[0][1] = homemade_kernel_func(norm_noise[0][1])
+                # print(time.time() - mark1)
+                # print()
+                
+                context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Kernel Function', graph_type, name, mic_Data_Record)
+            else:
+                context[graph_type] = None
+        case 'spectrogram_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
+                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
+                norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
+                if np.isfinite(norm_noisy_sig[0][1]).all() and np.isfinite(norm_noise[0][1]).all():
+                    norm_noisy_sig[0][1], _ = librosa.magphase(librosa.stft(norm_noisy_sig[0][1]), power=1)
+                    norm_noise[0][1], _ = librosa.magphase(librosa.stft(norm_noise[0][1]), power=1)
+                    norm_noisy_sig[0][1] = norm_noisy_sig[0][1].flatten()
+                    # norm_noisy_sig[0][1] = norm_noisy_sig[0][1][norm_noisy_sig[0][1] < 1000000]
+                    norm_noise[0][1] = norm_noise[0][1].flatten()
+                    # norm_noise[0][1] = norm_noise[0][1][norm_noise[0][1] < 1000000]
+                    context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Spectrogram', graph_type, name, mic_Data_Record)
+                else:
+                    context[graph_type] = None
+            else:
+                context[graph_type] = None
+        case 'harmonic_spectrogram_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
+                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
+                norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
+                if np.isfinite(norm_noisy_sig[0][1]).all() and np.isfinite(norm_noise[0][1]).all():
+                    norm_noisy_sig[0][1], _ = librosa.magphase(librosa.stft(norm_noisy_sig[0][1]), power=1)
+                    norm_noise[0][1], _ = librosa.magphase(librosa.stft(norm_noise[0][1]), power=1)
+                    norm_noisy_sig[0][1] = norm_noisy_sig[0][1].flatten()
+                    norm_noise[0][1] = norm_noise[0][1].flatten()
+                    context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Harmonic Spectrogram', graph_type, name, mic_Data_Record)
+                else:
+                    context[graph_type] = None
+            else:
+                context[graph_type] = None
+        case 'percussive_spectrogram_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
+                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
+                norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
+                if np.isfinite(norm_noisy_sig[0][1]).all() and np.isfinite(norm_noise[0][1]).all():
+                    norm_noisy_sig[0][1], _ = librosa.magphase(librosa.stft(norm_noisy_sig[0][1]), power=1)
+                    norm_noise[0][1], _ = librosa.magphase(librosa.stft(norm_noise[0][1]), power=1)
+                    norm_noisy_sig[0][1] = norm_noisy_sig[0][1].flatten()
+                    norm_noise[0][1] = norm_noise[0][1].flatten()
+                    context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Percussive Spectrogram', graph_type, name, mic_Data_Record)
+                else:
+                    context[graph_type] = None
+            else:
+                context[graph_type] = None
+        case 'autocorrelation_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
+                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
+                norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
+                if np.isfinite(norm_noisy_sig[0][1]).all() and np.isfinite(norm_noise[0][1]).all():
+                    norm_noisy_sig[0][1] = librosa.autocorrelate(norm_noisy_sig[0][1])
+                    norm_noisy_sig[0][1] = librosa.util.normalize(norm_noisy_sig[0][1])
+                    norm_noise[0][1] = librosa.autocorrelate(norm_noise[0][1])
+                    norm_noise[0][1] = librosa.util.normalize(norm_noise[0][1])
+                    context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Autocorrelation', graph_type, name, mic_Data_Record)
+                else:
+                    context[graph_type] = None
+            else:
+                context[graph_type] = None
+        case 'lag_Autocorrelation_PDF_Graph':
+            if norm_noisy_sig and norm_noise:
+                if stat_norm:
+                    norm_noisy_sig, norm_noise = apply_stat_norm_everywhere(norm_noisy_sig, norm_noise)
+                norm_noisy_sig = apply_bp_everywhere(norm_noisy_sig, low_high, order) if filter_sigs else norm_noisy_sig
+                norm_noise = apply_bp_everywhere(norm_noise, low_high, order) if filter_sigs else norm_noise
+                if np.isfinite(norm_noisy_sig[0][1]).all() and np.isfinite(norm_noise[0][1]).all():
+                    ns_os = librosa.onset.onset_strength(y=norm_noisy_sig[0][1], sr=norm_noisy_sig[0][0])
+                    ns_tempogram = librosa.feature.tempogram(onset_envelope=ns_os, sr=norm_noisy_sig[0][0])
+                    norm_noisy_sig[0][1] = librosa.autocorrelate(ns_os, max_size=ns_tempogram.shape[0])
+                    norm_noisy_sig[0][1] = librosa.util.normalize(norm_noisy_sig[0][1])
+                    n_os = librosa.onset.onset_strength(y=norm_noise[0][1], sr=norm_noise[0][0])
+                    n_tempogram = librosa.feature.tempogram(onset_envelope=n_os, sr=norm_noise[0][0])
+                    norm_noise[0][1] = librosa.autocorrelate(n_os, max_size=n_tempogram.shape[0])
+                    norm_noise[0][1] = librosa.util.normalize(norm_noise[0][1])
+                    context[graph_type] = stat.get_original_PDFs(norm_noisy_sig, norm_noise, 'Lag Autocorrelation', graph_type, name, mic_Data_Record)
+                else:
+                    context[graph_type] = None
             else:
                 context[graph_type] = None
     return context

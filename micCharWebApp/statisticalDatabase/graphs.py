@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from acoustics import Signal
 import numpy as np
 import pandas as pd
-import librosa
+import librosa, time
 from micCharacterization.graphic_interfacing import get_graph
 from micCharacterization.preprocessing import charts_preprocess, apply_norm_everywhere
 
@@ -11,10 +11,14 @@ fig_size = (6, 4.5)
 
 # stats.probplot
 
-def get_original_PDFs(noisy_sig, noise, pdf_type, graph_type, name, mic_Data_Record):    
+def get_original_PDFs(noisy_sig, noise, pdf_type, graph_type, name, mic_Data_Record):
+    ns = noisy_sig[2][1] if pdf_type == 'Kernel Function' else noisy_sig[0][1]
+    n = noise[2][1] if pdf_type == 'Kernel Function' else noise[0][1]
+    # ns = noisy_sig[0][1]
+    # n = noise[0][1]
     plt.figure(1, figsize=fig_size).clf()
-    plt.hist(noisy_sig[0][1], bins=100, density=True, label='PDF Noisy Signal', lw=1, alpha=0.5)
-    plt.hist(noise[0][1], bins=100, density=True, label='PDF Noise', lw=1, alpha=0.5)
+    plt.hist(ns, bins=100, density=True, label='PDF Noisy Signal', lw=1, alpha=0.5)
+    plt.hist(n, bins=100, density=True, label='PDF Noise', lw=1, alpha=0.5)
     plt.title(name + '\n' + pdf_type + ' PDFs')
     plt.xlabel('Signal Value')
     plt.ylabel('PDF')

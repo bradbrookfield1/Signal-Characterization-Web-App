@@ -10,38 +10,57 @@ def load_file(wav_name):
     else:
         sig = Signal.from_wav(wav_name, normalize=False)
         sr = sig.fs
+        # sig = sig if len(sig) == 2 or len(sig) == 4 else [sig]
         sig = sig if not (len(sig) == 2 or len(sig) == 4) else sig[0]
         
-        # lib_time_data, lib_time_samplerate = librosa.load(wav_name, sr=48000, mono=False)
-        # lib_snr_data, lib_snr_samplerate = librosa.load(wav_name, sr=2000, mono=False)
+        # lib_time_data, lib_time_samplerate = librosa.load(wav_name, sr=sr, mono=False)
+        # lib_snr_data, lib_snr_samplerate = librosa.load(wav_name, sr=8000, mono=False)
         lib_time_data, lib_time_samplerate = librosa.load(wav_name, sr=sr)
-        lib_snr_data, lib_snr_samplerate = librosa.load(wav_name, sr=2000)
+        lib_snr_data, lib_snr_samplerate = librosa.load(wav_name, sr=8000)
 
         lib_list = [lib_time_samplerate, lib_time_data]
         lib_snr_list = [lib_snr_samplerate, lib_snr_data]
         return lib_list, sig, lib_snr_list
 
 def apply_norm_to_lib(lib):
-    return [lib[0], np.int16((lib[1]/np.max(np.abs(lib[1])))*32767)]
+    # return np.int16((lib/np.max(np.abs(lib)))*32767)
+    return (lib - np.mean(lib))/np.std(lib)
 
 def apply_norm_to_Signal(sig):
-    sr = sig.fs
-    return Signal(apply_norm_to_lib([sr, np.asarray(sig)]), fs=sr)
+    return Signal((sig - np.mean(sig))/np.std(sig), fs=sig.fs)
+
+def apply_stat_norm_everywhere(noisy_sig, noise):
+    ns_mean = [np.mean(noisy_sig[0][1]), np.mean(noisy_sig[1]), np.mean(noisy_sig[2][1])]
+    ns_std = [np.std(noisy_sig[0][1]), np.std(noisy_sig[1]), np.std(noisy_sig[2][1])]
+    n_mean = [np.mean(noise[0][1]), np.mean(noise[1]), np.mean(noise[2][1])]
+    n_std = [np.std(noise[0][1]), np.std(noise[1]), np.std(noise[2][1])]
+    mean_diff = [ns_mean[0] - n_mean[0], ns_mean[1] - n_mean[1], ns_mean[2] - n_mean[2]]
+    
+    norm_lib_n = (noise[0][1] - n_mean[0])/n_std[0]
+    norm_sig_n = Signal((noise[1] - n_mean[1])/n_std[1], fs=noise[1].fs)
+    norm_snr_n = (noise[2][1] - n_mean[2])/n_std[2]
+    new_n = [[noise[0][0], norm_lib_n], norm_sig_n, [noise[2][0], norm_snr_n]]
+    
+    norm_lib_ns = (noisy_sig[0][1] - ns_mean[0])/ns_std[0] + mean_diff[0]
+    norm_sig_ns = Signal((noisy_sig[1] - ns_mean[1])/ns_std[1] + mean_diff[1], fs=noisy_sig[1].fs)
+    norm_snr_ns = (noisy_sig[0][1] - ns_mean[2])/ns_std[2] + mean_diff[2]
+    new_ns = [[noisy_sig[0][0], norm_lib_ns], norm_sig_ns, [noisy_sig[2][0], norm_snr_ns]]
+    return new_ns, new_n
 
 def apply_norm_everywhere(sig_struct):
-    return [apply_norm_to_lib(sig_struct[0]), apply_norm_to_Signal(sig_struct[1]), apply_norm_to_lib(sig_struct[2])]
+    return [[sig_struct[0][0], apply_norm_to_lib(sig_struct[0][1])], apply_norm_to_Signal(sig_struct[1]), [sig_struct[2][0], apply_norm_to_lib(sig_struct[2][1])]]
 
 def apply_bp_to_lib(lib, low_high, order):
     return [lib[0], butter_bandpass_filter(lib[1], low_high, lib[0], order)]
 
 def apply_bp_to_Signal(sig, low_high, order, snr=False):
-    sr = sig.fs
-    if snr:
-        return Signal(butter_bandpass_filter(sig, low_high, sr, order), fs=sr)
-    return Signal(butter_bandpass_filter(sig[1], low_high, sr, order), fs=sr)
+    return Signal(butter_bandpass_filter(sig, low_high, sig.fs, order), fs=sig.fs)
 
 def apply_bp_everywhere(sig_struct, low_high, order=4, snr=False):
-    return [apply_bp_to_lib(sig_struct[0], low_high, order), apply_bp_to_Signal(sig_struct[1], low_high, order, snr), apply_bp_to_lib(sig_struct[2], low_high, order)]
+    term1 = apply_bp_to_lib(sig_struct[0], low_high, order)
+    term2 = apply_bp_to_Signal(sig_struct[1], low_high, order, snr)
+    term3 = apply_bp_to_lib(sig_struct[2], low_high, order)
+    return [term1, term2, term3]
 
 def charts_preprocess(file_list=None):
     plt.switch_backend('AGG')

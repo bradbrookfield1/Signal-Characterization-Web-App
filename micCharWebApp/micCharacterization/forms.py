@@ -9,12 +9,12 @@ class MicDataRecordForm(forms.ModelForm):
 
     class Meta:
         model = MicDataRecord
-        # fields = ['record_Name', 'description', 'prediction_Harmonics',
+        # fields = ['record_Name', 'description',
         #           'noisy_Signal_File', 'measured_Signal_File', 'noise_File', 'true_Signal_File',
         #           'noisy_Signal_Harmonics', 'measured_Signal_Harmonics', 'noise_Harmonics', 'true_Signal_Harmonics',
         #           'noisy_Signal_Percussives', 'measured_Signal_Percussives', 'noise_Percussives', 'true_Signal_Percussives']
-        fields = ['record_Name', 'description', 'prediction_Harmonics',
-                  'noisy_Signal_File', 'measured_Signal_File', 'noise_File', 'true_Signal_File']
+        fields = ['record_Name', 'description', 'noisy_Signal_File',
+                  'measured_Signal_File', 'noise_File', 'true_Signal_File']
     
     def clean(self):
         cleaned_data = super().clean()

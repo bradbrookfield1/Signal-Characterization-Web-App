@@ -9,11 +9,8 @@
 		Microphone Data Record Statistical Details
 	</h1><br>
 	<div class="row">
-		<div class="col-md-6">
+		<div class="col">
 			Record Name: {{ object.record_Name }}
-		</div>
-		<div class="col-md-6">
-			Prediction Harmonics: {{ object.prediction_Harmonics }}
 		</div>
 	</div><br>
 	<div class="row">
@@ -234,6 +231,42 @@
 		<div class="col-md-6">
 			<center>
 				<img src="data:image/png;base64, {{ signal_Inversion_PDF_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+	</div><br>
+	<div class="row">
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ kernel_Function_PDF_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ spectrogram_PDF_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+	</div><br>
+	<div class="row">
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ harmonic_spectrogram_PDF_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ percussive_spectrogram_PDF_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+	</div><br>
+	<div class="row">
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ autocorrelation_PDF_Graph|safe }}" class="img-fluid">
+			</center>
+		</div>
+		<div class="col-md-6">
+			<center>
+				<img src="data:image/png;base64, {{ lag_Autocorrelation_PDF_Graph|safe }}" class="img-fluid">
 			</center>
 		</div>
 	</div><br><br>

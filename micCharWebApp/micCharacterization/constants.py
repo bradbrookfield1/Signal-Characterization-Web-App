@@ -30,3 +30,18 @@ p_bar_array = np.linspace(101325, 151325, 11)
 
 temperature = temperature + 273.15                          # To Kelvin
 # freqs = freqs/(p_bar/101325)                                # Normalized by barometric pressure
+
+# find_graphs()
+pred_harm = 5
+stat_norm = False
+filter_sigs = False
+low_high = [50, 3999]
+order = 4
+
+# Kernel functions
+dim_mult = 10
+# Kernel type list: 'additive_chi2', 'chi2', 'linear', 'poly' or 'polynomial', 'rbf', 'laplacian', 'sigmoid', 'cosine'
+kernel_type = 'rbf'
+gamma = 1.0
+degree = 3.0
+coeff = 1.0

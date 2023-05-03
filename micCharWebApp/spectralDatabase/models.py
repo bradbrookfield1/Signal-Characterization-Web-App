@@ -36,6 +36,9 @@ def delete_files_when_file_changed(sender, instance, **kwargs):
 class SpectralDatabase(models.Model):
     mic_Data_Record = models.OneToOneField(MicDataRecord, on_delete=models.CASCADE)
     average_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
+    noise_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
+    overlapping_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
+    overlapping_Harmonic_PSD_Graph = models.CharField(max_length=1000, default=None, null=True)
     phase_Spectrum_Graph = models.CharField(max_length=1000, default=None, null=True)
     spectrogram = models.CharField(max_length=1000, default=None, null=True)
     mellin_Spectrogram = models.CharField(max_length=1000, default=None, null=True)
